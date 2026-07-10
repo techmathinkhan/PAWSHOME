@@ -1,0 +1,2743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PawsHome — Find Your Forever Friend</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --forest:#1E3A2F;--forest-m:#2D5240;--sage:#4E8B62;--sage-l:#7AB08A;--sage-pale:#EBF4EE;
+  --amber:#C8742A;--amber-l:#F2DFC8;--amber-pale:#FDF6EE;--blush:#C4616E;--sky:#3B7EC8;
+  --ink:#1A1F1C;--ink-mid:#525D57;--ink-soft:#8E9990;
+  --bone:#F7F3EE;--bone-d:#EDE8E0;--white:#FFFFFF;--border:#E2DDD6;
+  --shadow-xs:0 1px 3px rgba(26,31,28,.06);--shadow-sm:0 2px 12px rgba(26,31,28,.09);
+  --shadow-md:0 8px 32px rgba(26,31,28,.12);--shadow-lg:0 20px 60px rgba(26,31,28,.16);
+  --r-sm:8px;--r-md:14px;--r-lg:20px;--r-xl:28px;--r-pill:999px;
+  --ease:cubic-bezier(.4,0,.2,1);--nav-h:68px;
+  --font-d:'Fraunces',Georgia,serif;--font-b:'DM Sans',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-b);background:var(--bone);color:var(--ink);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bone-d)}::-webkit-scrollbar-thumb{background:var(--sage-l);border-radius:3px}
+
+/* ── NAV ── */
+.topbar{background:rgba(247,243,238,.93);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:500;height:var(--nav-h);transition:box-shadow .3s}
+.topbar.scrolled{box-shadow:var(--shadow-sm)}
+.tb-inner{max-width:1320px;margin:0 auto;display:flex;align-items:center;height:100%;padding:0 1.5rem;gap:1.5rem}
+.logo{font-family:var(--font-d);font-size:1.55rem;font-weight:700;color:var(--forest);cursor:pointer;display:flex;align-items:center;gap:9px;letter-spacing:-.02em;text-decoration:none;white-space:nowrap}
+.logo em{color:var(--amber);font-style:normal}
+.nav-links{display:flex;gap:2px;align-items:center;flex:1}
+.nl{padding:.42rem .85rem;border-radius:var(--r-sm);font-size:.855rem;font-weight:500;color:var(--ink-mid);cursor:pointer;border:none;background:none;font-family:var(--font-b);transition:background .18s,color .18s;white-space:nowrap}
+.nl:hover,.nl.active{background:var(--sage-pale);color:var(--forest)}
+.nav-right{display:flex;gap:.5rem;align-items:center;margin-left:auto;flex-shrink:0}
+/* "More" dropdown */
+.nav-more{position:relative}
+.nav-more-btn{display:flex;align-items:center;gap:3px;white-space:nowrap}
+.nav-dropdown{
+  display:none;position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);
+  background:var(--white);border:1px solid var(--border);border-radius:var(--r-md);
+  box-shadow:var(--shadow-md);min-width:200px;z-index:600;
+  padding:.4rem 0;overflow:hidden;animation:fadeUp .18s var(--ease);
+}
+.nav-more.open .nav-dropdown{display:block}
+.nd-item{display:flex;align-items:center;gap:9px;width:100%;padding:.62rem 1.1rem;
+  font-family:var(--font-b);font-size:.875rem;font-weight:500;color:var(--ink-mid);
+  background:none;border:none;cursor:pointer;text-align:left;transition:background .15s,color .15s}
+.nd-item:hover{background:var(--sage-pale);color:var(--forest)}
+/* Ensure nav-auth items align properly */
+#nav-auth{display:flex;align-items:center;gap:.5rem}
+
+/* Hamburger */
+.ham{display:none;flex-direction:column;justify-content:center;align-items:center;gap:5px;width:40px;height:40px;background:none;border:1.5px solid var(--border);border-radius:var(--r-sm);cursor:pointer;padding:8px;transition:all .2s;flex-shrink:0}
+.ham:hover{background:var(--sage-pale);border-color:var(--sage)}
+.ham span{display:block;width:18px;height:2px;background:var(--ink);border-radius:2px;transition:all .3s var(--ease);transform-origin:center}
+.ham.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.ham.open span:nth-child(2){opacity:0;transform:scaleX(0)}
+.ham.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+/* Mobile drawer */
+.mob-overlay{display:none;position:fixed;inset:0;background:rgba(26,31,28,.5);z-index:490;opacity:0;pointer-events:none;transition:opacity .25s var(--ease)}
+.mob-overlay.open{opacity:1;pointer-events:auto}
+.mob-drawer{position:absolute;top:0;left:0;bottom:0;width:min(300px,85vw);background:var(--white);display:flex;flex-direction:column;transform:translateX(-100%);transition:transform .28s var(--ease);overflow-y:auto;box-shadow:var(--shadow-lg)}
+.mob-overlay.open .mob-drawer{transform:translateX(0)}
+.mob-brand{padding:1.2rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px;font-family:var(--font-d);font-size:1.3rem;font-weight:700;color:var(--forest)}
+.mob-brand em{color:var(--amber);font-style:normal}
+.mob-link{display:flex;align-items:center;gap:10px;padding:.78rem 1.4rem;font-size:.9rem;font-weight:500;color:var(--ink-mid);border:none;background:none;width:100%;text-align:left;font-family:var(--font-b);cursor:pointer;border-left:3px solid transparent;transition:all .18s}
+.mob-link:hover,.mob-link.active{background:var(--sage-pale);color:var(--forest);border-left-color:var(--sage)}
+.mob-sep{height:1px;background:var(--border);margin:.3rem 0}
+.mob-auth{padding:1rem 1.4rem;display:flex;flex-direction:column;gap:.6rem;margin-top:auto;border-top:1px solid var(--border)}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:.52rem 1.15rem;border-radius:var(--r-sm);font-family:var(--font-b);font-size:.855rem;font-weight:500;cursor:pointer;border:none;transition:all .2s var(--ease);text-decoration:none;white-space:nowrap}
+.btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--ink-mid)}
+.btn-ghost:hover{border-color:var(--sage);color:var(--forest)}
+.btn-forest{background:var(--forest);color:#fff}.btn-forest:hover{background:var(--forest-m)}
+.btn-sage{background:var(--sage);color:#fff}.btn-sage:hover{background:#3d7050}
+.btn-amber{background:var(--amber);color:#fff}.btn-amber:hover{background:#a85f20}
+.btn-ol-forest{background:transparent;border:1.5px solid var(--forest);color:var(--forest)}.btn-ol-forest:hover{background:var(--forest);color:#fff}
+.btn-sm{padding:.36rem .78rem;font-size:.8rem}
+.btn-lg{padding:.78rem 1.9rem;font-size:.975rem;border-radius:var(--r-md)}
+.btn-icon{width:36px;height:36px;padding:0;justify-content:center;font-size:1rem;border-radius:var(--r-sm)}
+
+/* ── PAGES ── */
+.page{display:none;animation:fadeUp .28s var(--ease) both}
+.page.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.container{max-width:1320px;margin:0 auto;padding:0 1.5rem}
+.section{padding:4rem 0}
+
+/* ── HERO ── */
+.hero{position:relative;min-height:92vh;display:flex;align-items:center;background:linear-gradient(155deg,#0D1F14 0%,#1E3A2F 45%,#0A2318 100%);overflow:hidden}
+.hero-noise{position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");z-index:0}
+.hero-glow1{position:absolute;top:-15%;right:-8%;width:560px;height:560px;background:radial-gradient(circle,rgba(78,139,98,.3) 0%,transparent 70%);z-index:0}
+.hero-glow2{position:absolute;bottom:-20%;left:-5%;width:480px;height:480px;background:radial-gradient(circle,rgba(200,116,42,.15) 0%,transparent 70%);z-index:0}
+.hero-wrap{position:relative;z-index:1;max-width:1320px;margin:0 auto;padding:0 1.5rem;display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;width:100%}
+.hero-left{color:#fff}
+.hero-chip{display:inline-flex;align-items:center;gap:8px;background:rgba(78,139,98,.22);border:1px solid rgba(78,139,98,.4);border-radius:var(--r-pill);padding:.35rem 1rem;font-size:.74rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;margin-bottom:1.6rem;color:rgba(255,255,255,.88)}
+.chip-dot{width:7px;height:7px;background:#7AB08A;border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.hero h1{font-family:var(--font-d);font-size:clamp(2.7rem,4.6vw,4.3rem);font-weight:700;line-height:1.08;letter-spacing:-.03em;margin-bottom:1.4rem}
+.hero h1 em{color:#7AB08A;font-style:italic}
+.hero-sub{font-size:1.04rem;line-height:1.8;opacity:.75;margin-bottom:2.2rem;font-weight:300;max-width:480px}
+.hero-ctas{display:flex;gap:.85rem;flex-wrap:wrap;margin-bottom:3rem}
+.hero-trust{display:flex;align-items:center;gap:.9rem;flex-wrap:wrap}
+.hero-ti{display:flex;align-items:center;gap:6px;font-size:.8rem;opacity:.58}
+.hero-sep{width:1px;height:14px;background:rgba(255,255,255,.2)}
+
+/* Hero image collage */
+.hero-right{position:relative;height:540px}
+.hig{position:relative;width:100%;height:100%}
+.hig-main{position:absolute;top:0;right:0;width:74%;height:70%;border-radius:var(--r-xl);overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.4)}
+.hig-main img{width:100%;height:100%;object-fit:cover}
+.hig-sec{position:absolute;bottom:0;left:0;width:54%;height:52%;border-radius:var(--r-xl);overflow:hidden;box-shadow:0 16px 40px rgba(0,0,0,.35);border:3px solid rgba(255,255,255,.1)}
+.hig-sec img{width:100%;height:100%;object-fit:cover}
+.hig-badge{position:absolute;top:50%;right:-4%;transform:translateY(-50%);background:#fff;border-radius:var(--r-lg);padding:1rem 1.1rem;box-shadow:var(--shadow-md);min-width:130px}
+.hig-badge .hbn{font-family:var(--font-d);font-size:2rem;font-weight:700;color:var(--forest);line-height:1}
+.hig-badge .hbl{font-size:.7rem;color:var(--ink-mid);margin-top:3px}
+.hig-badge2{position:absolute;bottom:30%;left:40%;background:var(--amber);border-radius:var(--r-md);padding:.7rem .9rem;box-shadow:0 8px 24px rgba(200,116,42,.4);color:#fff}
+.hig-badge2 .hb2n{font-family:var(--font-d);font-size:1.4rem;font-weight:700;line-height:1}
+.hig-badge2 .hb2l{font-size:.7rem;opacity:.85}
+
+/* Stats bar */
+.stats-bar{background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);padding:1.8rem 2.5rem;display:grid;grid-template-columns:repeat(4,1fr);box-shadow:var(--shadow-md)}
+.hstat{text-align:center;padding:0 1rem;position:relative}
+.hstat+.hstat::before{content:'';position:absolute;left:0;top:15%;height:70%;width:1px;background:var(--border)}
+.hstat-n{font-family:var(--font-d);font-size:2.4rem;font-weight:700;color:var(--forest);line-height:1;display:block}
+.hstat-l{font-size:.77rem;color:var(--ink-mid);margin-top:.3rem}
+
+/* Marquee */
+.marquee-strip{background:var(--forest);padding:1.25rem 0;overflow:hidden}
+.marquee-inner{display:flex;gap:3rem;white-space:nowrap;animation:marquee 24s linear infinite}
+.mi{display:flex;align-items:center;gap:.75rem;color:rgba(255,255,255,.65);font-size:.87rem;flex-shrink:0}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* How */
+.how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
+.how-card{background:var(--white);border-radius:var(--r-xl);padding:2.2rem 2rem;border:1px solid var(--border);box-shadow:var(--shadow-xs);position:relative;overflow:hidden;transition:transform .22s,box-shadow .22s}
+.how-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-md)}
+.how-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.how-card:nth-child(1)::before{background:linear-gradient(90deg,var(--sage),var(--sage-l))}
+.how-card:nth-child(2)::before{background:linear-gradient(90deg,var(--amber),#e8a060)}
+.how-card:nth-child(3)::before{background:linear-gradient(90deg,var(--blush),#e08090)}
+.how-num{width:48px;height:48px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-size:1.4rem;font-weight:700;margin-bottom:1.2rem}
+.how-num.n1{background:var(--sage-pale);color:var(--sage)}.how-num.n2{background:var(--amber-pale);color:var(--amber)}.how-num.n3{background:#fce8ea;color:var(--blush)}
+.how-card h3{font-family:var(--font-d);font-size:1.2rem;font-weight:600;margin-bottom:.55rem}
+.how-card p{font-size:.855rem;color:var(--ink-mid);line-height:1.7;font-weight:300}
+
+/* Section headings */
+.sh{margin-bottom:2.2rem}
+.sh h2{font-family:var(--font-d);font-size:2.1rem;font-weight:700;letter-spacing:-.025em;margin-bottom:.4rem}
+.sh p{color:var(--ink-mid);font-size:.92rem;font-weight:300}
+.sh-row{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:2.2rem;flex-wrap:wrap;gap:1rem}
+.sh-row h2{font-family:var(--font-d);font-size:2rem;font-weight:700;letter-spacing:-.025em}
+.sh-row p{color:var(--ink-mid);font-size:.87rem;font-weight:300;margin-top:.25rem}
+.accent{color:var(--amber)}
+
+/* Image row */
+.img-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.2rem}
+.img-row-item{height:250px;border-radius:var(--r-lg);overflow:hidden}
+.img-row-item img{width:100%;height:100%;object-fit:cover;transition:transform .4s var(--ease)}
+.img-row-item:hover img{transform:scale(1.06)}
+
+/* CTA banner */
+.cta-ban{background:linear-gradient(130deg,var(--forest) 0%,#2D5240 60%,#1A3828 100%);border-radius:var(--r-xl);padding:3.5rem;color:#fff;display:grid;grid-template-columns:1fr auto;gap:2rem;align-items:center;position:relative;overflow:hidden}
+.cta-ban::after{content:'🐾';position:absolute;right:270px;top:50%;transform:translateY(-50%);font-size:8rem;opacity:.06}
+.cta-ban h2{font-family:var(--font-d);font-size:2rem;font-weight:700;letter-spacing:-.02em;margin-bottom:.5rem}
+.cta-ban p{opacity:.72;font-size:.9rem;font-weight:300;line-height:1.65;max-width:500px}
+.cta-btns{display:flex;gap:.75rem;flex-shrink:0;flex-wrap:wrap}
+
+/* Filters */
+.filters{background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);padding:1.4rem 1.6rem;display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end;box-shadow:var(--shadow-xs);margin-bottom:2rem}
+.fg{display:flex;flex-direction:column;gap:5px;flex:1;min-width:130px}
+.fg label{font-size:.7rem;font-weight:700;color:var(--ink-mid);text-transform:uppercase;letter-spacing:.07em}
+.fg select,.fg input[type=text]{padding:.54rem .85rem;border:1.5px solid var(--border);border-radius:var(--r-sm);font-family:var(--font-b);font-size:.87rem;color:var(--ink);background:var(--bone);outline:none;transition:border-color .18s;-webkit-appearance:none;appearance:none}
+.fg select:focus,.fg input[type=text]:focus{border-color:var(--sage);background:var(--white)}
+
+/* Pet cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(278px,1fr));gap:1.4rem}
+.pc{background:var(--white);border-radius:var(--r-xl);overflow:hidden;border:1px solid var(--border);box-shadow:var(--shadow-xs);transition:transform .22s var(--ease),box-shadow .22s var(--ease);cursor:pointer;position:relative}
+.pc:hover{transform:translateY(-5px);box-shadow:var(--shadow-md)}
+.pc-img{height:210px;display:flex;align-items:center;justify-content:center;font-size:5rem;position:relative;overflow:hidden}
+.pc-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;transition:transform .4s var(--ease)}
+.pc:hover .pc-img img{transform:scale(1.05)}
+.pc-emoji{position:relative;z-index:1;filter:drop-shadow(0 4px 12px rgba(0,0,0,.12))}
+.pc-badge{position:absolute;top:11px;left:11px;z-index:2;padding:.27rem .68rem;border-radius:var(--r-pill);font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;backdrop-filter:blur(8px)}
+.b-avail{background:rgba(78,139,98,.9);color:#fff}.b-adopt{background:rgba(200,116,42,.9);color:#fff}.b-pend{background:rgba(59,126,200,.9);color:#fff}
+.pc-fav{position:absolute;top:11px;right:11px;z-index:2;width:34px;height:34px;background:rgba(255,255,255,.9);border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.95rem;backdrop-filter:blur(6px);transition:transform .18s}
+.pc-fav:hover{transform:scale(1.2)}
+.pc-body{padding:1.15rem 1.2rem 1.25rem}
+.pc-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.3rem}
+.pc-name{font-family:var(--font-d);font-size:1.28rem;font-weight:700;letter-spacing:-.01em}
+.pc-age{font-size:.78rem;color:var(--ink-soft);margin-top:3px}
+.pc-breed{font-size:.8rem;color:var(--amber);font-weight:600;margin-bottom:.7rem}
+.pc-tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.85rem}
+.pc-tag{padding:.2rem .58rem;border-radius:var(--r-pill);font-size:.72rem;font-weight:500;background:var(--bone-d);border:1px solid var(--border);color:var(--ink-mid);display:flex;align-items:center;gap:4px}
+.pc-tag.vy{background:var(--sage-pale);border-color:#b8d9be;color:var(--sage)}
+.pc-tag.vn{background:#fce8ea;border-color:#f4c4ca;color:var(--blush)}
+.pc-desc{font-size:.83rem;color:var(--ink-mid);line-height:1.65;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:1rem;font-weight:300}
+.pc-foot{display:flex;gap:.5rem}
+.pc-foot .btn{flex:1;justify-content:center}
+.adopt-note{background:var(--amber-pale);border:1px solid #e8c8a0;border-radius:var(--r-sm);padding:.65rem .9rem;margin-top:.75rem;font-size:.78rem;color:var(--amber);line-height:1.5}
+.adopt-note strong{display:block;margin-bottom:2px}
+
+/* Blog */
+.blog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(308px,1fr));gap:1.4rem}
+.blog-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow-xs);transition:transform .22s,box-shadow .22s;cursor:pointer}
+.blog-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-md)}
+.blog-img{height:170px;display:flex;align-items:center;justify-content:center;font-size:3.8rem}
+.blog-cat{display:inline-block;background:var(--amber-pale);color:var(--amber);border-radius:var(--r-pill);padding:.22rem .7rem;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.7rem}
+.blog-body{padding:1.25rem}
+.blog-card h3{font-family:var(--font-d);font-size:1.1rem;font-weight:600;margin-bottom:.5rem;line-height:1.35;letter-spacing:-.01em}
+.blog-card p{font-size:.835rem;color:var(--ink-mid);line-height:1.65;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:.9rem;font-weight:300}
+.blog-meta{display:flex;align-items:center;justify-content:space-between;font-size:.75rem;color:var(--ink-soft)}
+
+/* Modal */
+.overlay{display:none;position:fixed;inset:0;background:rgba(26,31,28,.65);z-index:600;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(6px)}
+.overlay.open{display:flex}
+.modal{background:var(--white);border-radius:var(--r-xl);width:100%;max-width:800px;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow-lg);animation:slideUp .28s var(--ease)}
+@keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.modal-iw{height:320px;display:flex;align-items:center;justify-content:center;font-size:9rem;position:relative;overflow:hidden;border-radius:var(--r-xl) var(--r-xl) 0 0}
+.modal-iw img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.modal-emoji{position:relative;z-index:1}
+.modal-x{position:absolute;top:14px;right:14px;z-index:10;width:38px;height:38px;background:rgba(255,255,255,.9);border:none;border-radius:50%;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .18s}
+.modal-x:hover{background:#fff}
+.modal-body{padding:2rem}
+.modal-title{font-family:var(--font-d);font-size:2rem;font-weight:700;letter-spacing:-.025em;margin-bottom:.2rem}
+.modal-breed{color:var(--amber);font-weight:600;font-size:.88rem;margin-bottom:1.4rem}
+.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.4rem}
+.mf label{font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-soft);font-weight:700;display:block;margin-bottom:3px}
+.mf span{font-size:.9rem;font-weight:500;color:var(--ink)}
+.modal-desc{font-size:.9rem;color:var(--ink-mid);line-height:1.8;margin-bottom:1.5rem;font-weight:300}
+.modal-acts{display:flex;gap:.7rem;flex-wrap:wrap}
+.modal-acts .btn{flex:1;min-width:120px;justify-content:center}
+
+/* Forms */
+.form-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);padding:2.5rem;box-shadow:var(--shadow-xs)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem}
+.fg2{display:flex;flex-direction:column;gap:5px}
+.fg2.full{grid-column:1/-1}
+.fg2 label{font-size:.73rem;font-weight:700;color:var(--ink);text-transform:uppercase;letter-spacing:.06em}
+.fg2 input,.fg2 select,.fg2 textarea{padding:.64rem 1rem;border:1.5px solid var(--border);border-radius:var(--r-sm);font-family:var(--font-b);font-size:.88rem;color:var(--ink);background:var(--bone);outline:none;transition:border-color .18s,box-shadow .18s;width:100%}
+.fg2 input:focus,.fg2 select:focus,.fg2 textarea:focus{border-color:var(--sage);box-shadow:0 0 0 3px rgba(78,139,98,.12);background:var(--white)}
+.fg2 textarea{resize:vertical;min-height:96px}
+.img-drop{border:2px dashed var(--border);border-radius:var(--r-md);padding:1.5rem;text-align:center;cursor:pointer;transition:all .2s;background:var(--bone);position:relative;overflow:hidden}
+.img-drop:hover{border-color:var(--sage);background:var(--sage-pale)}
+.img-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;z-index:2}
+.img-drop .up-ico{font-size:2rem;margin-bottom:.5rem}
+.img-drop p{font-size:.8rem;color:var(--ink-mid)}
+.img-prev{width:100%;height:140px;object-fit:cover;border-radius:var(--r-sm);display:none;margin-top:.75rem}
+.sec-lbl{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding-bottom:.5rem;margin-bottom:1rem;border-bottom:2px solid}
+
+/* Auth */
+.auth-wrap{min-height:calc(100vh - var(--nav-h));display:flex;align-items:center;justify-content:center;padding:3rem 1rem;background:radial-gradient(ellipse at 30% 40%,var(--sage-pale),var(--bone) 60%)}
+.auth-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);padding:2.8rem;width:100%;max-width:440px;box-shadow:var(--shadow-md)}
+.auth-logo{text-align:center;margin-bottom:2rem}
+.auth-logo h2{font-family:var(--font-d);font-size:1.8rem;font-weight:700;color:var(--forest);margin-top:.5rem}
+.auth-logo p{color:var(--ink-mid);font-size:.87rem;margin-top:.25rem;font-weight:300}
+.auth-hint{background:var(--amber-pale);border:1px solid #e8c8a0;border-radius:var(--r-md);padding:.9rem 1.1rem;font-size:.79rem;color:var(--amber);margin-top:1.2rem;line-height:1.6}
+.auth-sw{text-align:center;margin-top:1.4rem;font-size:.87rem;color:var(--ink-mid)}
+.auth-sw a{color:var(--forest);font-weight:600;cursor:pointer}
+
+/* Admin */
+.admin-wrap{display:grid;grid-template-columns:260px 1fr;min-height:calc(100vh - var(--nav-h))}
+.admin-side{background:#0F1F14;position:sticky;top:var(--nav-h);height:calc(100vh - var(--nav-h));overflow-y:auto;display:flex;flex-direction:column}
+.aside-logo{padding:1.4rem 1.4rem 1rem;border-bottom:1px solid rgba(255,255,255,.07)}
+.aside-logo h3{font-family:var(--font-d);font-size:1rem;font-weight:600;color:rgba(255,255,255,.55)}
+.aside-logo p{font-size:.72rem;color:rgba(255,255,255,.28);margin-top:2px}
+.aside-grp{padding:.6rem 0 .4rem}
+.aside-grp-lbl{padding:.3rem 1.3rem .45rem;font-size:.63rem;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.25);font-weight:700}
+.aside-link{display:flex;align-items:center;gap:10px;padding:.65rem 1.3rem;color:rgba(255,255,255,.55);font-size:.865rem;font-weight:400;cursor:pointer;border:none;background:none;width:100%;font-family:var(--font-b);text-align:left;border-left:3px solid transparent;transition:all .18s;position:relative}
+.aside-link:hover,.aside-link.active{background:rgba(78,139,98,.12);color:#fff;border-left-color:var(--sage-l)}
+.aside-link .aico{width:20px;text-align:center;font-size:.95rem;flex-shrink:0}
+.aside-link .badge-n{position:absolute;right:1.1rem;top:50%;transform:translateY(-50%);background:var(--amber);color:#fff;border-radius:var(--r-pill);padding:.08rem .45rem;font-size:.65rem;font-weight:700}
+.aside-foot{margin-top:auto;padding:1.2rem 1.3rem;border-top:1px solid rgba(255,255,255,.07)}
+.admin-main{padding:2rem 2.2rem;background:var(--bone);overflow:auto}
+.admin-panel{display:none}
+.admin-panel.active{display:block;animation:fadeUp .22s var(--ease)}
+.panel-hd{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:2rem}
+.panel-hd h2{font-family:var(--font-d);font-size:1.85rem;font-weight:700;letter-spacing:-.025em}
+.panel-hd p{color:var(--ink-mid);font-size:.875rem;font-weight:300;margin-top:.2rem}
+
+/* Stats */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.6rem}
+.stat{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.35rem 1.4rem;box-shadow:var(--shadow-xs);overflow:hidden;position:relative;transition:box-shadow .2s,transform .2s}
+.stat:hover{box-shadow:var(--shadow-sm);transform:translateY(-2px)}
+.stat-accent{position:absolute;top:0;left:0;right:0;height:3px}
+.sa-sage{background:linear-gradient(90deg,var(--sage),var(--sage-l))}.sa-amber{background:linear-gradient(90deg,var(--amber),#e8a060)}.sa-sky{background:linear-gradient(90deg,var(--sky),#70a8e0)}.sa-blush{background:linear-gradient(90deg,var(--blush),#d88090)}
+.stat-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.85rem}
+.stat-icon{width:42px;height:42px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0}
+.si-sage{background:var(--sage-pale)}.si-amber{background:var(--amber-pale)}.si-sky{background:#e8f0fc}.si-blush{background:#fce8ea}
+.stat-num{font-family:var(--font-d);font-size:2.4rem;font-weight:700;line-height:1;color:var(--ink)}
+.stat-lbl{font-size:.73rem;color:var(--ink-mid);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:.2rem}
+.stat-sub{font-size:.75rem;color:var(--ink-soft);font-weight:300}
+
+/* Charts */
+.chart-row{display:grid;grid-template-columns:1fr 1fr 1.6fr;gap:1.2rem;margin-top:1.4rem}
+.chart-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.6rem;box-shadow:var(--shadow-xs)}
+.chart-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.4rem}
+.chart-hd h3{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-mid)}
+.cl{display:flex;flex-direction:column;gap:.55rem;margin-top:.9rem}
+.cl-item{display:flex;align-items:center;justify-content:space-between;gap:.75rem}
+.cl-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.cl-lbl{font-size:.78rem;color:var(--ink-mid);flex:1}
+.cl-val{font-size:.82rem;font-weight:600;color:var(--ink)}
+
+/* Table */
+.tc{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-xs)}
+.tc-head{padding:1.1rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.tc-head h3{font-size:.95rem;font-weight:600}
+.srch{padding:.44rem .85rem;border:1.5px solid var(--border);border-radius:var(--r-sm);font-family:var(--font-b);font-size:.82rem;outline:none;background:var(--bone);width:200px;transition:border-color .18s}
+.srch:focus{border-color:var(--sage)}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:.8rem 1.2rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-mid);font-weight:700;background:var(--bone-d);border-bottom:1px solid var(--border)}
+td{padding:.88rem 1.2rem;font-size:.865rem;border-bottom:1px solid rgba(226,221,214,.45);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(247,243,238,.7)}
+.td-img{width:42px;height:42px;border-radius:var(--r-sm);overflow:hidden;background:var(--sage-pale);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0}
+.td-img img{width:100%;height:100%;object-fit:cover}
+.td-acts{display:flex;gap:.35rem;flex-wrap:wrap}
+.td-name{font-weight:600;color:var(--ink)}
+.td-sub{font-size:.75rem;color:var(--ink-soft);font-weight:300;margin-top:2px}
+
+/* Chips */
+.chip{display:inline-flex;align-items:center;gap:4px;padding:.24rem .65rem;border-radius:var(--r-pill);font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.chip-available{background:var(--sage-pale);color:var(--sage)}
+.chip-adopted{background:var(--amber-pale);color:var(--amber)}
+.chip-pending{background:#e8f0fc;color:var(--sky)}
+.chip-responded,.chip-approved,.chip-accepted{background:var(--sage-pale);color:var(--sage)}
+.chip-rejected,.chip-declined{background:#fce8ea;color:var(--blush)}
+.chip-under_review{background:var(--amber-pale);color:var(--amber)}
+
+/* Profile */
+.prof-banner{background:linear-gradient(135deg,var(--forest),var(--forest-m));color:#fff;padding:3rem 2rem}
+.prof-av{width:78px;height:78px;background:rgba(255,255,255,.18);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-size:2rem;font-weight:700;margin-bottom:.9rem;border:3px solid rgba(255,255,255,.3)}
+.prof-name{font-family:var(--font-d);font-size:1.9rem;font-weight:700;margin-bottom:.2rem}
+.ptabs{display:flex;gap:.4rem;margin-bottom:1.8rem;border-bottom:1px solid var(--border);padding-bottom:.8rem;flex-wrap:wrap}
+.ptab{padding:.42rem 1.05rem;border-radius:var(--r-sm);font-size:.855rem;font-weight:500;cursor:pointer;border:none;background:none;font-family:var(--font-b);color:var(--ink-mid);transition:all .18s}
+.ptab.active{background:var(--forest);color:#fff}
+.ptab:hover:not(.active){background:var(--sage-pale);color:var(--forest)}
+
+/* Appt card */
+.appt-c{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.3rem 1.4rem;display:flex;align-items:center;gap:1.1rem;box-shadow:var(--shadow-xs);margin-bottom:.85rem}
+.appt-ico{width:50px;height:50px;border-radius:var(--r-md);background:var(--sage-pale);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;overflow:hidden}
+.appt-ico img{width:100%;height:100%;object-fit:cover;border-radius:var(--r-md)}
+
+/* Surrender hero */
+.sur-hero{background:linear-gradient(135deg,var(--amber-pale),#fdf0e8);border:1px solid #e8c8a0;border-radius:var(--r-xl);padding:2.4rem;text-align:center;margin-bottom:2.5rem}
+.sur-hero h2{font-family:var(--font-d);font-size:1.9rem;font-weight:700;color:var(--amber);margin-bottom:.4rem}
+.sur-hero p{color:var(--ink-mid);font-size:.9rem;max-width:520px;margin:0 auto;line-height:1.7;font-weight:300}
+
+/* Chatbot guide */
+.cg-wrap{position:fixed;bottom:1.8rem;right:1.8rem;z-index:400;width:360px;background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);box-shadow:var(--shadow-lg);display:none;flex-direction:column;overflow:hidden;animation:slideUp .25s var(--ease)}
+.cg-wrap.open{display:flex}
+.cg-head{background:var(--forest);color:#fff;padding:.95rem 1.2rem;display:flex;align-items:center;gap:10px}
+.cg-av{width:36px;height:36px;background:rgba(255,255,255,.18);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.cg-hi h4{font-size:.92rem;font-weight:600}
+.cg-hi p{font-size:.72rem;opacity:.7}
+.cg-x{margin-left:auto;background:rgba(255,255,255,.14);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.85rem}
+.cg-body{padding:1.2rem;max-height:460px;overflow-y:auto}
+.cg-intro{background:var(--sage-pale);border:1px solid #b8d9be;border-radius:var(--r-md);padding:1rem;margin-bottom:1rem;font-size:.82rem;line-height:1.65;color:var(--forest)}
+.cg-intro strong{display:block;margin-bottom:.35rem;font-size:.88rem}
+.cg-step{margin-bottom:1.1rem}
+.cg-sn{background:var(--forest);color:#fff;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;margin-right:.5rem;flex-shrink:0;vertical-align:middle}
+.cg-step h5{font-size:.83rem;font-weight:600;margin-bottom:.35rem;display:flex;align-items:center}
+.cg-step p{font-size:.78rem;color:var(--ink-mid);line-height:1.6}
+.cg-code{background:var(--bone-d);border:1px solid var(--border);border-radius:var(--r-sm);padding:.7rem .9rem;font-family:monospace;font-size:.72rem;color:var(--forest);margin:.5rem 0;line-height:1.65;white-space:pre-wrap;word-break:break-all}
+.cg-btn{display:flex;align-items:center;gap:.65rem;padding:.7rem .9rem;background:var(--bone);border:1px solid var(--border);border-radius:var(--r-sm);margin-bottom:.5rem;cursor:pointer;transition:all .18s;font-size:.8rem;font-weight:500;color:var(--ink);text-decoration:none;width:100%}
+.cg-btn:hover{background:var(--sage-pale);border-color:var(--sage);color:var(--forest)}
+.chat-fab{position:fixed;bottom:1.8rem;right:1.8rem;z-index:400;width:54px;height:54px;background:var(--forest);border:none;border-radius:50%;color:#fff;font-size:1.45rem;cursor:pointer;box-shadow:0 4px 18px rgba(30,58,47,.45);transition:transform .2s,box-shadow .2s;display:flex;align-items:center;justify-content:center}
+.chat-fab:hover{transform:scale(1.1)}
+
+/* Toast */
+.toast-wrap{position:fixed;top:80px;right:1.5rem;z-index:900;display:flex;flex-direction:column;gap:.5rem;pointer-events:none}
+.toast{background:var(--white);border:1px solid var(--border);border-radius:var(--r-md);padding:.88rem 1.2rem;box-shadow:var(--shadow-md);max-width:320px;border-left:4px solid var(--sage);animation:slideRight .25s var(--ease);font-size:.875rem;pointer-events:auto}
+.toast.err{border-left-color:var(--blush)}
+.toast-t{font-weight:600;margin-bottom:2px}
+.toast-s{font-size:.78rem;color:var(--ink-mid);font-weight:300}
+@keyframes slideRight{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}
+
+/* Misc */
+.empty{text-align:center;padding:4rem 2rem;color:var(--ink-mid)}
+.empty .eico{font-size:3.8rem;margin-bottom:1rem}
+.empty h3{font-family:var(--font-d);font-size:1.35rem;color:var(--ink);margin-bottom:.4rem}
+.empty p{font-size:.87rem;font-weight:300}
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--sage);border-radius:50%;animation:spin .7s linear infinite;margin:3rem auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+
+/* ── APPLICATION WORKFLOW ──────────────────────────────── */
+.pipeline{display:flex;align-items:flex-start;gap:0;margin:1.5rem 0;overflow-x:auto;padding:.5rem 0}
+.pip-step{display:flex;flex-direction:column;align-items:center;gap:.35rem;min-width:110px;position:relative}
+.pip-step+.pip-step::before{content:'';position:absolute;left:-50%;top:21px;width:100%;height:2px;background:var(--border);z-index:0}
+.pip-step.done+.pip-step::before{background:var(--sage)}
+.pip-circle{width:44px;height:44px;border-radius:50%;border:2px solid var(--border);background:var(--white);display:flex;align-items:center;justify-content:center;font-size:1rem;position:relative;z-index:1;transition:all .3s}
+.pip-step.done .pip-circle{background:var(--sage);border-color:var(--sage);color:#fff}
+.pip-step.active .pip-circle{background:var(--amber);border-color:var(--amber);color:#fff;box-shadow:0 0 0 4px rgba(200,116,42,.2)}
+.pip-step.rejected .pip-circle{background:var(--blush);border-color:var(--blush);color:#fff}
+.pip-label{font-size:.68rem;font-weight:600;color:var(--ink-mid);text-align:center;text-transform:uppercase;letter-spacing:.04em;max-width:90px}
+.pip-step.active .pip-label{color:var(--amber);font-weight:700}
+.pip-step.done .pip-label{color:var(--sage)}
+.app-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.3rem 1.4rem;margin-bottom:.9rem;box-shadow:var(--shadow-xs);display:grid;grid-template-columns:auto 1fr auto;gap:1rem;align-items:center;transition:box-shadow .2s}
+.app-card:hover{box-shadow:var(--shadow-sm)}
+.app-pet-img{width:54px;height:54px;border-radius:var(--r-md);background:var(--sage-pale);display:flex;align-items:center;justify-content:center;font-size:1.5rem;overflow:hidden;flex-shrink:0}
+.app-pet-img img{width:100%;height:100%;object-fit:cover}
+.app-info h4{font-weight:600;font-size:.95rem;margin-bottom:.2rem}
+.app-info p{font-size:.8rem;color:var(--ink-mid)}
+.app-status-col{display:flex;flex-direction:column;align-items:flex-end;gap:.4rem}
+
+/* ── LOST & FOUND ──────────────────────────────────────── */
+.lf-tabs{display:flex;gap:.5rem;margin-bottom:1.8rem;flex-wrap:wrap}
+.lf-tab{padding:.5rem 1.3rem;border-radius:var(--r-pill);font-size:.875rem;font-weight:600;cursor:pointer;border:2px solid var(--border);background:var(--white);font-family:var(--font-b);transition:all .2s;color:var(--ink-mid)}
+.lf-tab.all.active{background:var(--bone-d);border-color:var(--ink-mid);color:var(--ink)}
+.lf-tab.lost.active{background:#fce8ea;border-color:var(--blush);color:var(--blush)}
+.lf-tab.found.active{background:var(--sage-pale);border-color:var(--sage);color:var(--sage)}
+.lf-tab:hover:not(.active){background:var(--bone-d)}
+.lf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.3rem}
+.lf-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow-xs);transition:transform .2s,box-shadow .2s}
+.lf-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.lf-img{height:180px;display:flex;align-items:center;justify-content:center;font-size:4rem;position:relative;overflow:hidden;background:var(--bone-d)}
+.lf-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.lf-type-badge{position:absolute;top:10px;left:10px;padding:.25rem .7rem;border-radius:var(--r-pill);font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;backdrop-filter:blur(6px)}
+.lf-type-lost{background:rgba(196,97,110,.88);color:#fff}
+.lf-type-found{background:rgba(78,139,98,.88);color:#fff}
+.lf-resolved-badge{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.55);color:#fff;padding:.22rem .65rem;border-radius:var(--r-pill);font-size:.68rem;font-weight:600}
+.lf-body{padding:1.1rem}
+.lf-title{font-family:var(--font-d);font-size:1.1rem;font-weight:700;margin-bottom:.2rem}
+.lf-area{font-size:.78rem;color:var(--amber);font-weight:600;margin-bottom:.55rem}
+.lf-desc{font-size:.82rem;color:var(--ink-mid);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:.85rem}
+.lf-contact-box{background:var(--bone-d);border-radius:var(--r-sm);padding:.65rem .85rem;font-size:.78rem;color:var(--ink-mid);line-height:1.6}
+.lf-contact-box strong{color:var(--ink);display:block;margin-bottom:2px}
+
+/* ── SUCCESS STORIES ───────────────────────────────────── */
+.stories-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.4rem}
+.story-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow-xs);transition:transform .22s,box-shadow .22s;cursor:pointer;position:relative}
+.story-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-md)}
+.story-img{height:200px;display:flex;align-items:center;justify-content:center;font-size:4.5rem;background:linear-gradient(135deg,var(--sage-pale),var(--amber-pale));position:relative;overflow:hidden}
+.story-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.story-featured{position:absolute;top:10px;right:10px;background:var(--amber);color:#fff;padding:.22rem .65rem;border-radius:var(--r-pill);font-size:.68rem;font-weight:700;text-transform:uppercase}
+.story-body{padding:1.2rem}
+.story-pet-chip{display:inline-flex;align-items:center;gap:5px;background:var(--amber-pale);color:var(--amber);border-radius:var(--r-pill);padding:.2rem .7rem;font-size:.72rem;font-weight:700;margin-bottom:.65rem}
+.story-title{font-family:var(--font-d);font-size:1.12rem;font-weight:700;margin-bottom:.45rem;line-height:1.35;letter-spacing:-.01em}
+.story-excerpt{font-size:.835rem;color:var(--ink-mid);line-height:1.65;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:.85rem}
+.story-meta{display:flex;align-items:center;justify-content:space-between;font-size:.75rem;color:var(--ink-soft)}
+.story-full-overlay{display:none;position:fixed;inset:0;background:rgba(26,31,28,.7);z-index:600;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(6px)}
+.story-full-overlay.open{display:flex}
+.story-full-modal{background:var(--white);border-radius:var(--r-xl);max-width:680px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);animation:slideUp .28s var(--ease)}
+.story-full-img{height:260px;display:flex;align-items:center;justify-content:center;font-size:6rem;background:linear-gradient(135deg,var(--sage-pale),var(--amber-pale));position:relative;overflow:hidden;border-radius:var(--r-xl) var(--r-xl) 0 0}
+.story-full-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.story-full-body{padding:2rem}
+.story-full-title{font-family:var(--font-d);font-size:1.8rem;font-weight:700;letter-spacing:-.02em;margin-bottom:.5rem}
+.story-full-text{font-size:.92rem;color:var(--ink-mid);line-height:1.85;font-weight:300;white-space:pre-line}
+
+/* ── AI CHATBOT ────────────────────────────────────────── */
+.ai-fab{position:fixed;bottom:1.8rem;right:1.8rem;z-index:400;width:56px;height:56px;background:linear-gradient(135deg,var(--forest),var(--sage));border:none;border-radius:50%;color:#fff;font-size:1.4rem;cursor:pointer;box-shadow:0 4px 20px rgba(30,58,47,.5);transition:transform .2s;display:flex;align-items:center;justify-content:center}
+.ai-fab:hover{transform:scale(1.1)}
+.ai-fab-pulse{position:absolute;top:-2px;right:-2px;width:14px;height:14px;background:var(--amber);border-radius:50%;border:2px solid var(--white);animation:pulse 2s infinite}
+.ai-win{position:fixed;bottom:5.2rem;right:1.8rem;z-index:400;width:380px;background:var(--white);border:1px solid var(--border);border-radius:var(--r-xl);box-shadow:var(--shadow-lg);display:none;flex-direction:column;overflow:hidden;animation:slideUp .25s var(--ease)}
+.ai-win.open{display:flex}
+.ai-head{background:linear-gradient(135deg,var(--forest),var(--forest-m,#2D5240));color:#fff;padding:.95rem 1.2rem;display:flex;align-items:center;gap:10px}
+.ai-av{width:38px;height:38px;background:rgba(255,255,255,.18);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+.ai-head-info h4{font-size:.92rem;font-weight:700}
+.ai-head-info p{font-size:.72rem;opacity:.75}
+.ai-x{margin-left:auto;background:rgba(255,255,255,.15);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.85rem}
+.ai-msgs{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.75rem;max-height:340px}
+.ai-msg.bot{align-self:flex-start;max-width:90%}
+.ai-msg.user{align-self:flex-end;max-width:85%}
+.ai-bubble{padding:.62rem 1rem;border-radius:var(--r-lg);font-size:.845rem;line-height:1.6}
+.ai-msg.bot .ai-bubble{background:var(--bone-d);color:var(--ink);border-radius:4px var(--r-lg) var(--r-lg) var(--r-lg)}
+.ai-msg.user .ai-bubble{background:var(--forest);color:#fff;border-radius:var(--r-lg) 4px var(--r-lg) var(--r-lg)}
+.ai-typing{display:flex;gap:4px;padding:.62rem 1rem;background:var(--bone-d);border-radius:4px var(--r-lg) var(--r-lg) var(--r-lg);width:fit-content;align-self:flex-start}
+.ai-typing span{width:7px;height:7px;background:var(--ink-soft);border-radius:50%;animation:dot 1.2s infinite}
+.ai-typing span:nth-child(2){animation-delay:.2s}.ai-typing span:nth-child(3){animation-delay:.4s}
+.ai-pet-chips{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.5rem}
+.ai-pet-chip{background:var(--sage-pale);border:1px solid #b8d9be;border-radius:var(--r-pill);padding:.22rem .7rem;font-size:.73rem;color:var(--sage);font-weight:600;cursor:pointer;transition:all .18s}
+.ai-pet-chip:hover{background:var(--sage);color:#fff}
+.ai-quick{display:flex;flex-wrap:wrap;gap:.35rem;padding:.7rem 1rem;border-top:1px solid var(--border);background:var(--bone)}
+.ai-qbtn{padding:.33rem .7rem;border-radius:var(--r-pill);font-size:.73rem;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:var(--white);color:var(--ink-mid);font-family:var(--font-b);transition:all .18s;white-space:nowrap}
+.ai-qbtn:hover{border-color:var(--sage);color:var(--forest);background:var(--sage-pale)}
+.ai-bar{padding:.65rem .9rem;border-top:1px solid var(--border);display:flex;gap:.5rem}
+.ai-bar input{flex:1;padding:.52rem .85rem;border:1.5px solid var(--border);border-radius:var(--r-pill);font-family:var(--font-b);font-size:.845rem;outline:none;transition:border-color .18s}
+.ai-bar input:focus{border-color:var(--sage)}
+.ai-send{width:36px;height:36px;background:var(--forest);border:none;border-radius:50%;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.9rem;transition:background .18s}
+.ai-send:hover{background:var(--sage)}
+
+/* Admin filter tab buttons */
+.admin-tab-btn{padding:.38rem .85rem;border-radius:var(--r-pill);font-size:.82rem;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:var(--white);color:var(--ink-mid);font-family:var(--font-b);transition:all .18s}
+.admin-tab-btn.active{background:var(--forest);color:#fff;border-color:var(--forest)}
+.admin-tab-btn:hover:not(.active){background:var(--sage-pale);border-color:var(--sage);color:var(--forest)}
+/* Dark mode additions */
+body.dark .app-card,body.dark .lf-card,body.dark .story-card,body.dark .story-full-modal,body.dark .ai-win{background:var(--white)}
+body.dark .lf-contact-box,body.dark .ai-msg.bot .ai-bubble,body.dark .ai-quick{background:var(--bone-d)}
+
+/* Dark mode */
+
+body.dark{--ink:#EDEAE4;--ink-mid:#9A9790;--ink-soft:#68655F;--bone:#181714;--bone-d:#1E1C18;--white:#242018;--border:#333028;--shadow-xs:0 1px 3px rgba(0,0,0,.3);--shadow-sm:0 2px 12px rgba(0,0,0,.4);--shadow-md:0 8px 32px rgba(0,0,0,.45)}
+body.dark .topbar{background:rgba(24,23,20,.94)}
+body.dark .fg select,body.dark .fg input[type=text],body.dark .fg2 input,body.dark .fg2 select,body.dark .fg2 textarea{background:var(--bone-d);color:var(--ink)}
+body.dark th{background:#1E1C18}
+body.dark .how-card,body.dark .pc,body.dark .blog-card,body.dark .tc,body.dark .stat,body.dark .chart-card,body.dark .form-card,body.dark .auth-card{background:var(--white)}
+body.dark .mob-drawer{background:#1E1C18}
+body.dark .mob-link{color:rgba(255,255,255,.6)}
+body.dark .mob-link:hover{background:rgba(78,139,98,.12);color:#fff}
+body.dark .stats-bar{background:var(--white)}
+body.dark .cg-wrap{background:var(--white)}
+
+/* Responsive */
+@media(max-width:1024px){.chart-row{grid-template-columns:1fr 1fr}}
+@media(max-width:900px){
+  .nav-links{display:none}
+  .ham{display:flex}
+  .mob-overlay{display:block}
+  .admin-wrap{grid-template-columns:1fr}
+  .admin-side{display:none}
+  .stats-row{grid-template-columns:1fr 1fr}
+  .chart-row{grid-template-columns:1fr}
+  .how-grid{grid-template-columns:1fr}
+  .hero-wrap{grid-template-columns:1fr;text-align:center;gap:2rem;padding-top:4rem;padding-bottom:2rem}
+  .hero-sub,.hero-ctas,.hero-trust{margin-left:auto;margin-right:auto}
+  .hero-ctas,.hero-trust{justify-content:center}
+  .hero-right{height:300px}
+  .stats-bar{grid-template-columns:1fr 1fr}
+  .cta-ban{grid-template-columns:1fr}
+  .img-row{grid-template-columns:1fr}
+  .form-grid{grid-template-columns:1fr}
+  .modal-grid{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  .stats-row{grid-template-columns:1fr}
+  .hero h1{font-size:2.4rem}
+  .hero-right{height:220px}
+  .hig-badge,.hig-badge2{display:none}
+  .stats-bar{grid-template-columns:1fr 1fr;padding:1.2rem 1.2rem}
+  .admin-main{padding:1.2rem}
+  .cg-wrap{width:calc(100vw - 2rem);right:1rem;bottom:5.5rem}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="topbar" id="topbar">
+  <div class="tb-inner">
+    <a class="logo" onclick="nav('home')">🐾 Paws<em>Home</em></a>
+    <div class="nav-links">
+      <button class="nl active" onclick="nav('home')">Home</button>
+      <button class="nl" onclick="nav('pets')">Browse Pets</button>
+      <button class="nl" onclick="nav('adopted')">Adopted</button>
+      <button class="nl" onclick="nav('applications')">Apply to Adopt</button>
+      <!-- More dropdown -->
+      <div class="nav-more" id="nav-more">
+        <button class="nl nav-more-btn" onclick="toggleNavMore(event)">More ▾</button>
+        <div class="nav-dropdown" id="nav-dropdown">
+          <button class="nd-item" onclick="nav('lostfound');closeNavMore()">🔍 Lost &amp; Found</button>
+          <button class="nd-item" onclick="nav('stories');closeNavMore()">❤️ Success Stories</button>
+          <button class="nd-item" onclick="nav('surrender');closeNavMore()">🏠 Give a Pet</button>
+          <button class="nd-item" onclick="nav('blog');closeNavMore()">📰 Pet Care Blog</button>
+          <button class="nd-item" onclick="nav('enquiry');closeNavMore()">📩 Submit Enquiry</button>
+          <button class="nd-item" onclick="nav('appointments');closeNavMore()">📅 Book a Visit</button>
+        </div>
+      </div>
+    </div>
+    <div class="nav-right">
+      <button class="btn btn-icon btn-ghost" onclick="toggleDark()" id="dark-btn" title="Dark mode">🌙</button>
+      <div id="nav-auth"></div>
+      <button class="ham" id="ham-btn" onclick="toggleMob()" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</nav>
+
+<!-- MOBILE DRAWER -->
+<div class="mob-overlay" id="mob-overlay" onclick="closeMobBackdrop(event)">
+  <div class="mob-drawer">
+    <div class="mob-brand">🐾 Paws<em>Home</em></div>
+    <button class="mob-link" onclick="nav('home');toggleMob()">🏠 Home</button>
+    <button class="mob-link" onclick="nav('pets');toggleMob()">🐾 Browse Pets</button>
+    <button class="mob-link" onclick="nav('adopted');toggleMob()">🎉 Adopted Pets</button>
+    <button class="mob-link" onclick="nav('applications');toggleMob()">📋 Apply to Adopt</button>
+    <button class="mob-link" onclick="nav('lostfound');toggleMob()">🔍 Lost & Found</button>
+    <button class="mob-link" onclick="nav('stories');toggleMob()">❤️ Success Stories</button>
+    <button class="mob-link" onclick="nav('surrender');toggleMob()">🏠 Give a Pet</button>
+    <button class="mob-link" onclick="nav('blog');toggleMob()">📰 Pet Care Blog</button>
+    <div class="mob-sep"></div>
+    <button class="mob-link" onclick="nav('enquiry');toggleMob()">📩 Submit Enquiry</button>
+    <button class="mob-link" onclick="nav('appointments');toggleMob()">📅 Book a Visit</button>
+    <div class="mob-sep"></div>
+    <div class="mob-auth" id="mob-auth"></div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- ═══ HOME ═══ -->
+<div class="page active" id="page-home">
+  <section class="hero">
+    <div class="hero-noise"></div><div class="hero-glow1"></div><div class="hero-glow2"></div>
+    <div class="hero-wrap">
+      <div class="hero-left">
+        <div class="hero-chip"><span class="chip-dot"></span> India's Trusted Pet Adoption Platform</div>
+        <h1>Every Animal Deserves<br>a <em>Forever Home</em></h1>
+        <p class="hero-sub">Thousands of loving animals wait at our shelter — each with a story, a personality, and a place in their heart just for you. Find your perfect companion today.</p>
+        <div class="hero-ctas">
+          <button class="btn btn-lg" style="background:#fff;color:var(--forest);font-weight:600" onclick="nav('pets')">Browse Available Pets →</button>
+          <button class="btn btn-lg" style="background:rgba(255,255,255,.11);border:1.5px solid rgba(255,255,255,.28);color:#fff" onclick="nav('enquiry')">Submit Enquiry</button>
+        </div>
+        <div class="hero-trust">
+          <div class="hero-ti">✓ No-kill shelter</div><div class="hero-sep"></div>
+          <div class="hero-ti">🩺 Vet-checked</div><div class="hero-sep"></div>
+          <div class="hero-ti">❤️ Adoption support</div>
+        </div>
+      </div>
+      <div class="hero-right">
+        <div class="hig">
+          <div class="hig-main"><img src="https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=700&q=80&auto=format" alt="Happy dog" loading="lazy"></div>
+          <div class="hig-sec"><img src="https://images.unsplash.com/photo-1574158622682-e40e69881006?w=500&q=80&auto=format" alt="Cute cat" loading="lazy"></div>
+          <div class="hig-badge"><div class="hbn" id="h-avail-b">—</div><div class="hbl">Pets available</div></div>
+          <div class="hig-badge2"><div class="hb2n" id="h-adopt-b">—</div><div class="hb2l">Adoptions ✓</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats bar -->
+  <div class="container" style="position:relative;z-index:2;margin-top:-1px">
+    <div class="stats-bar">
+      <div class="hstat"><span class="hstat-n" id="h-avail">—</span><div class="hstat-l">Pets Available</div></div>
+      <div class="hstat"><span class="hstat-n" id="h-adopt">—</span><div class="hstat-l">Happy Adoptions</div></div>
+      <div class="hstat"><span class="hstat-n" id="h-enq">—</span><div class="hstat-l">Enquiries Handled</div></div>
+      <div class="hstat"><span class="hstat-n" id="h-blog">—</span><div class="hstat-l">Care Articles</div></div>
+    </div>
+  </div>
+
+  <!-- Marquee -->
+  <div class="marquee-strip">
+    <div class="marquee-inner">
+      <span class="mi">🐾 Adopt Don't Shop</span><span class="mi">💉 All Pets Vet-Checked</span><span class="mi">🏠 Free Post-Adoption Support</span><span class="mi">❤️ No-Kill Shelter Policy</span><span class="mi">🐶 Dogs, Cats, Rabbits & More</span><span class="mi">📍 Bangalore, Karnataka</span><span class="mi">🌿 Since 2015</span>
+      <span class="mi">🐾 Adopt Don't Shop</span><span class="mi">💉 All Pets Vet-Checked</span><span class="mi">🏠 Free Post-Adoption Support</span><span class="mi">❤️ No-Kill Shelter Policy</span><span class="mi">🐶 Dogs, Cats, Rabbits & More</span><span class="mi">📍 Bangalore, Karnataka</span><span class="mi">🌿 Since 2015</span>
+    </div>
+  </div>
+
+  <!-- Featured pets -->
+  <section class="section">
+    <div class="container">
+      <div class="sh-row">
+        <div>
+          <div style="display:inline-flex;align-items:center;gap:7px;background:var(--sage-pale);color:var(--forest);border-radius:var(--r-pill);padding:.28rem .85rem;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.9rem">🌟 Featured Companions</div>
+          <h2>Meet Our <span class="accent">Wonderful</span> Animals</h2>
+          <p>Hand-picked pets looking for loving families right now</p>
+        </div>
+        <button class="btn btn-ol-forest" onclick="nav('pets')">View All →</button>
+      </div>
+      <div class="grid" id="home-featured"></div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="section" style="background:var(--bone-d)">
+    <div class="container">
+      <div class="sh" style="text-align:center;max-width:560px;margin:0 auto 2.5rem">
+        <h2>How Adoption <span class="accent">Works</span></h2>
+        <p>Three simple steps to welcome a new member to your family</p>
+      </div>
+      <div class="how-grid">
+        <div class="how-card"><div class="how-num n1">1</div><h3>Browse & Connect</h3><p>Filter by species, breed, age, and vaccination. Each profile includes a full story and personality description.</p></div>
+        <div class="how-card"><div class="how-num n2">2</div><h3>Submit Enquiry</h3><p>Fill a short adoption request. Our team personally reviews every application and responds within 24 hours.</p></div>
+        <div class="how-card"><div class="how-num n3">3</div><h3>Welcome Home</h3><p>Visit our shelter, meet your companion, and complete the paperwork. We provide a starter kit and 30-day support.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Photo row -->
+  <section class="section">
+    <div class="container">
+      <div class="img-row">
+        <div class="img-row-item"><img src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=500&q=80&auto=format" alt="Dogs playing" loading="lazy"></div>
+        <div class="img-row-item"><img src="https://images.unsplash.com/photo-1571566882372-1598d88abd90?w=500&q=80&auto=format" alt="Happy cat" loading="lazy"></div>
+        <div class="img-row-item"><img src="https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=500&q=80&auto=format" alt="Child with pet" loading="lazy"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="section" style="padding-top:0">
+    <div class="container">
+      <div class="cta-ban">
+        <div>
+          <h2>Ready to Change a Life — and Your Own?</h2>
+          <p>Adopting a pet is one of the most meaningful decisions you'll ever make. Our team makes every step feel easy, warm, and joyful.</p>
+        </div>
+        <div class="cta-btns">
+          <button class="btn btn-lg" style="background:#fff;color:var(--forest);font-weight:600" onclick="nav('pets')">Find My Pet →</button>
+          <button class="btn btn-lg" style="background:rgba(255,255,255,.14);border:1.5px solid rgba(255,255,255,.3);color:#fff" onclick="nav('surrender')">Give a Pet</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Blog preview -->
+  <section class="section" style="background:var(--bone-d)">
+    <div class="container">
+      <div class="sh-row">
+        <div><h2>Pet Care <span class="accent">Knowledge</span></h2><p>Expert articles from our vets and trainers</p></div>
+        <button class="btn btn-ol-forest" onclick="nav('blog')">All Articles →</button>
+      </div>
+      <div class="blog-grid" id="home-blog"></div>
+    </div>
+  </section>
+</div>
+
+<!-- ═══ PETS ═══ -->
+<div class="page" id="page-pets">
+  <section class="section">
+    <div class="container">
+      <div class="sh"><h2>Available <span class="accent">Pets</span></h2><p>All animals currently at our shelter, ready for adoption</p></div>
+      <div class="filters">
+        <div class="fg"><label>Search</label><input type="text" id="f-search" placeholder="Name or breed…" oninput="loadPets()"></div>
+        <div class="fg"><label>Species</label><select id="f-species" onchange="loadPets()"><option value="">All Species</option><option>Dog</option><option>Cat</option><option>Rabbit</option><option>Bird</option><option>Hamster</option></select></div>
+        <div class="fg"><label>Gender</label><select id="f-gender" onchange="loadPets()"><option value="">Any Gender</option><option>Male</option><option>Female</option></select></div>
+        <div class="fg"><label>Age Range</label><select id="f-age" onchange="loadPets()"><option value="">Any Age</option><option value="puppy">Baby (0–1 yr)</option><option value="young">Young (1–3 yrs)</option><option value="adult">Adult (3–7 yrs)</option><option value="senior">Senior (7+)</option></select></div>
+        <div class="fg"><label>Vaccinated</label><select id="f-vacc" onchange="loadPets()"><option value="">Any</option><option value="true">Vaccinated ✓</option><option value="false">Not vaccinated</option></select></div>
+        <button class="btn btn-ghost btn-sm" onclick="resetFilters()" style="margin-top:auto">Reset</button>
+      </div>
+      <div class="grid" id="pets-grid"></div>
+      <div id="pets-empty" class="empty" style="display:none"><div class="eico">🔍</div><h3>No pets match</h3><p>Try adjusting your filters</p></div>
+    </div>
+  </section>
+</div>
+
+<!-- ═══ ADOPTED ═══ -->
+<div class="page" id="page-adopted">
+  <section class="section">
+    <div class="container">
+      <div style="background:linear-gradient(135deg,var(--amber-pale),#fdf0e8);border:1px solid #e8c8a0;border-radius:var(--r-xl);padding:2rem;text-align:center;margin-bottom:2.5rem">
+        <div style="font-size:3rem;margin-bottom:.6rem">🎉</div>
+        <h2 style="font-family:var(--font-d);font-size:1.9rem;font-weight:700;color:var(--amber);margin-bottom:.4rem">Happy Tails</h2>
+        <p style="color:var(--ink-mid);font-size:.92rem;font-weight:300">These lucky animals have found their forever families. Every adoption is a story worth celebrating.</p>
+      </div>
+      <div class="grid" id="adopted-grid"></div>
+      <div id="adopted-empty" class="empty" style="display:none"><div class="eico">❤️</div><h3>No adoptions yet</h3></div>
+    </div>
+  </section>
+</div>
+
+<!-- ═══ SURRENDER ═══ -->
+<div class="page" id="page-surrender">
+  <section class="section">
+    <div class="container" style="max-width:760px">
+      <div class="sur-hero">
+        <div style="font-size:3.2rem;margin-bottom:.75rem">🏠</div>
+        <h2>Give Your Pet a Safe New Home</h2>
+        <p>Life changes — and sometimes the most loving thing you can do is find your pet a new family. No judgement, just compassion.</p>
+      </div>
+      <div class="form-card">
+        <h2 style="font-family:var(--font-d);font-size:1.65rem;font-weight:700;margin-bottom:.35rem">Pet Surrender Form</h2>
+        <p style="color:var(--ink-mid);font-size:.87rem;font-weight:300;margin-bottom:1.8rem">Fill in as much detail as you can — it helps us care for your pet and find the right home.</p>
+        <div class="sec-lbl" style="color:var(--sage);border-color:var(--sage-l)">Your Details</div>
+        <div class="form-grid" style="margin-bottom:1.5rem">
+          <div class="fg2"><label>Full Name *</label><input type="text" id="sur-oname" placeholder="Your name"></div>
+          <div class="fg2"><label>Email *</label><input type="email" id="sur-oemail" placeholder="your@email.com"></div>
+          <div class="fg2"><label>Phone</label><input type="tel" id="sur-ophone" placeholder="+91 98765 43210"></div>
+          <div class="fg2"><label>Reason *</label>
+            <select id="sur-rsel" onchange="if(this.value&&this.value!=='Other'){document.getElementById('sur-reason').value=this.value}else{document.getElementById('sur-reason').value=''}">
+              <option value="">Select reason…</option>
+              <option>Moving to a pet-unfriendly place</option><option>Allergies in the family</option>
+              <option>Financial difficulties</option><option>New baby / family situation</option>
+              <option>Original owner passed away</option><option>Landlord restrictions</option><option>Other</option>
+            </select>
+          </div>
+          <div class="fg2 full"><label>Reason Details *</label><textarea id="sur-reason" placeholder="Please describe your situation…"></textarea></div>
+        </div>
+        <div class="sec-lbl" style="color:var(--amber);border-color:#e8c8a0">About Your Pet</div>
+        <div class="form-grid">
+          <div class="fg2"><label>Pet's Name *</label><input type="text" id="sur-pname" placeholder="e.g. Bruno"></div>
+          <div class="fg2"><label>Species *</label><select id="sur-species"><option value="">Select…</option><option>Dog</option><option>Cat</option><option>Rabbit</option><option>Bird</option><option>Hamster</option><option>Other</option></select></div>
+          <div class="fg2"><label>Breed</label><input type="text" id="sur-breed" placeholder="e.g. Labrador Mix"></div>
+          <div class="fg2"><label>Age (years)</label><input type="number" id="sur-age" min="0" max="30" step="0.5" placeholder="3"></div>
+          <div class="fg2"><label>Gender</label><select id="sur-gender"><option>Unknown</option><option>Male</option><option>Female</option></select></div>
+          <div class="fg2"><label>Vaccinated?</label><select id="sur-vacc"><option value="false">No / Unsure</option><option value="true">Yes, fully vaccinated</option></select></div>
+          <div class="fg2 full"><label>Health & Behaviour Notes</label><textarea id="sur-health" placeholder="Medical conditions, medications, allergies, behavioural traits, fears, or special needs…"></textarea></div>
+          <div class="fg2 full">
+            <label>Photo of Your Pet</label>
+            <div class="img-drop">
+              <input type="file" id="sur-img" accept="image/*" onchange="previewImg('sur-img','sur-img-prev')">
+              <div class="up-ico">📷</div><p>Click to upload — helps us find the right home faster</p>
+              <img id="sur-img-prev" class="img-prev" alt="Preview">
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-amber btn-lg" onclick="submitSurrender()" style="width:100%;justify-content:center;margin-top:1.8rem">Submit for Shelter Care 🏠</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ═══ ENQUIRY ═══ -->
+<div class="page" id="page-enquiry">
+  <section class="section">
+    <div class="container" style="max-width:680px">
+      <div class="form-card">
+        <h2 style="font-family:var(--font-d);font-size:1.75rem;font-weight:700;margin-bottom:.3rem">🐾 Adoption Enquiry</h2>
+        <p style="color:var(--ink-mid);font-size:.87rem;font-weight:300;margin-bottom:1.8rem">Tell us about yourself and which pet you're interested in. We respond within 24 hours.</p>
+        <div class="form-grid">
+          <div class="fg2"><label>Your Name *</label><input type="text" id="enq-name" placeholder="Full name"></div>
+          <div class="fg2"><label>Email *</label><input type="email" id="enq-email" placeholder="your@email.com"></div>
+          <div class="fg2"><label>Phone</label><input type="tel" id="enq-phone" placeholder="+91 98765 43210"></div>
+          <div class="fg2"><label>Interested Pet *</label><select id="enq-pet"><option value="">Select a pet…</option></select></div>
+          <div class="fg2 full"><label>Your Message *</label><textarea id="enq-msg" placeholder="Tell us about your home, lifestyle, other pets, children, and why this pet feels right for you…"></textarea></div>
+        </div>
+        <button class="btn btn-forest btn-lg" onclick="submitEnquiry()" style="width:100%;justify-content:center;margin-top:1.5rem">Send Enquiry 📩</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ═══ APPOINTMENTS ═══ -->
+<div class="page" id="page-appointments">
+  <section class="section">
+    <div class="container">
+      <div class="sh"><h2>Book a <span class="accent">Visit</span></h2><p>Schedule time to meet a pet at our shelter. We confirm within 24 hours.</p></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start">
+        <div class="form-card">
+          <h3 style="font-family:var(--font-d);font-size:1.3rem;font-weight:700;margin-bottom:1.2rem">Schedule Appointment</h3>
+          <div style="display:flex;flex-direction:column;gap:.9rem">
+            <div class="fg2"><label>Your Name *</label><input type="text" id="ap-name" placeholder="Full name"></div>
+            <div class="fg2"><label>Email *</label><input type="email" id="ap-email" placeholder="your@email.com"></div>
+            <div class="fg2"><label>Phone</label><input type="tel" id="ap-phone" placeholder="+91…"></div>
+            <div class="fg2"><label>Pet to Visit *</label><select id="ap-pet"><option value="">Select a pet…</option></select></div>
+            <div class="fg2"><label>Preferred Date *</label><input type="date" id="ap-date"></div>
+            <div class="fg2"><label>Preferred Time</label><select id="ap-time"><option>10:00 AM</option><option>11:00 AM</option><option>12:00 PM</option><option>2:00 PM</option><option>3:00 PM</option><option>4:00 PM</option></select></div>
+            <div class="fg2"><label>Notes</label><textarea id="ap-notes" placeholder="Anything we should know…" style="min-height:68px"></textarea></div>
+            <button class="btn btn-forest" onclick="submitAppt()" style="justify-content:center">📅 Book Visit</button>
+          </div>
+        </div>
+        <div>
+          <h3 style="font-family:var(--font-d);font-size:1.2rem;font-weight:700;margin-bottom:1.2rem">Your Upcoming Visits</h3>
+          <div id="user-appts"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ═══ BLOG ═══ -->
+<div class="page" id="page-blog">
+  <section class="section">
+    <div class="container">
+      <div class="sh"><h2>Pet Care <span class="accent">Blog</span></h2><p>Expert articles from our vets and trainers</p></div>
+      <div class="blog-grid" id="blog-grid"></div>
+    </div>
+  </section>
+</div>
+
+<!-- ═══ LOGIN ═══ -->
+<div class="page" id="page-login">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-logo"><div style="font-size:2.8rem">🐾</div><h2>Welcome Back</h2><p>Sign in to your PawsHome account</p></div>
+      <div style="display:flex;flex-direction:column;gap:.9rem">
+        <div class="fg2"><label>Email</label><input type="email" id="lg-email" placeholder="your@email.com"></div>
+        <div class="fg2"><label>Password</label><input type="password" id="lg-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+        <button class="btn btn-forest" onclick="doLogin()" style="justify-content:center;padding:.72rem">Sign In →</button>
+      </div>
+      <div class="auth-hint"><strong>Demo Credentials</strong><br>Admin: admin@pawshome.com / admin123<br>User: user@example.com / user123</div>
+      <div class="auth-sw">New here? <a onclick="nav('register')">Create a free account</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ REGISTER ═══ -->
+<div class="page" id="page-register">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-logo"><div style="font-size:2.8rem">🐾</div><h2>Create Account</h2><p>Join the PawsHome community</p></div>
+      <div style="display:flex;flex-direction:column;gap:.9rem">
+        <div class="fg2"><label>Full Name</label><input type="text" id="rg-name" placeholder="Your name"></div>
+        <div class="fg2"><label>Email</label><input type="email" id="rg-email" placeholder="your@email.com"></div>
+        <div class="fg2"><label>Phone (optional)</label><input type="tel" id="rg-phone" placeholder="+91 98765 43210"></div>
+        <div class="fg2"><label>Password</label><input type="password" id="rg-pass" placeholder="Min. 6 characters"></div>
+        <div class="fg2"><label>Confirm Password</label><input type="password" id="rg-pass2" placeholder="Repeat password" onkeydown="if(event.key==='Enter')doRegister()"></div>
+        <button class="btn btn-forest" onclick="doRegister()" style="justify-content:center;padding:.72rem">Create Account 🐾</button>
+      </div>
+      <div class="auth-sw">Have an account? <a onclick="nav('login')">Sign in</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PROFILE ═══ -->
+<div class="page" id="page-profile">
+  <div class="prof-banner"><div class="container">
+    <div class="prof-av" id="p-av">?</div>
+    <div class="prof-name" id="p-name">Loading…</div>
+    <div style="opacity:.75;font-size:.9rem;font-weight:300" id="p-email"></div>
+  </div></div>
+  <section class="section">
+    <div class="container">
+      <div class="ptabs">
+        <button class="ptab active" onclick="profileTab('favs',this)">❤️ Favourites</button>
+        <button class="ptab" onclick="profileTab('enq',this)">📩 My Enquiries</button>
+        <button class="ptab" onclick="profileTab('ap',this)">📅 My Appointments</button>
+        <button class="ptab" onclick="profileTab('sur',this)">🏠 My Surrenders</button>
+      </div>
+      <div id="ptab-favs"><div class="grid" id="fav-grid"></div><div id="fav-empty" class="empty" style="display:none"><div class="eico">💔</div><h3>No favourites yet</h3><p>Tap ❤️ on any pet to save them here</p></div></div>
+      <div id="ptab-enq" style="display:none"></div>
+      <div id="ptab-ap" style="display:none"></div>
+      <div id="ptab-sur" style="display:none"></div>
+    </div>
+  </section>
+</div>
+
+<!-- ═══ ADMIN ═══ -->
+<div class="page" id="page-admin">
+  <div class="admin-wrap">
+    <aside class="admin-side">
+      <div class="aside-logo"><h3>PawsHome Admin</h3><p>Management Console</p></div>
+      <div class="aside-grp">
+        <div class="aside-grp-lbl">Overview</div>
+        <button class="aside-link active" onclick="adminTab('dashboard',this)"><span class="aico">📊</span> Dashboard</button>
+      </div>
+      <div class="aside-grp">
+        <div class="aside-grp-lbl">Pets</div>
+        <button class="aside-link" onclick="adminTab('pets',this)"><span class="aico">🐾</span> Manage Pets</button>
+        <button class="aside-link" onclick="adminTab('surrenders',this)"><span class="aico">🏠</span> Surrender Inbox<span class="badge-n" id="surr-dot" style="display:none">0</span></button>
+      </div>
+      <div class="aside-grp">
+        <div class="aside-grp-lbl">Requests</div>
+        <button class="aside-link" onclick="adminTab('enquiries',this)"><span class="aico">📩</span> Enquiries<span class="badge-n" id="enq-dot" style="display:none">0</span></button>
+        <button class="aside-link" onclick="adminTab('appointments',this)"><span class="aico">📅</span> Appointments<span class="badge-n" id="ap-dot" style="display:none">0</span></button>
+        <button class="aside-link" onclick="adminTab('admin-apps',this)"><span class="aico">📋</span> Applications<span class="badge-n" id="apps-dot" style="display:none">0</span></button>
+        <button class="aside-link" onclick="adminTab('admin-lf',this)"><span class="aico">🔍</span> Lost &amp; Found<span class="badge-n" id="lf-dot" style="display:none">0</span></button>
+        <button class="aside-link" onclick="adminTab('admin-stories',this)"><span class="aico">❤️</span> Stories<span class="badge-n" id="stories-dot" style="display:none">0</span></button>
+      </div>
+      <div class="aside-grp">
+        <div class="aside-grp-lbl">Content</div>
+        <button class="aside-link" onclick="adminTab('blog',this)"><span class="aico">📰</span> Blog Posts</button>
+      </div>
+      <div class="aside-foot">
+        <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;color:rgba(255,255,255,.5);border-color:rgba(255,255,255,.15)" onclick="doLogout()">← Exit Admin</button>
+      </div>
+    </aside>
+    <main class="admin-main">
+      <!-- Dashboard -->
+      <div class="admin-panel active" id="ap-dashboard">
+        <div class="panel-hd"><div><h2>Dashboard</h2><p>Real-time overview of shelter activity</p></div><button class="btn btn-forest btn-sm" onclick="loadDashboard()">⟳ Refresh</button></div>
+        <div class="stats-row">
+          <div class="stat"><div class="stat-accent sa-sage"></div><div class="stat-top"><div><div class="stat-num" id="d-avail">—</div><div class="stat-lbl">Available Pets</div></div><div class="stat-icon si-sage">🐾</div></div><div class="stat-sub">Ready for adoption</div></div>
+          <div class="stat"><div class="stat-accent sa-amber"></div><div class="stat-top"><div><div class="stat-num" id="d-adopt">—</div><div class="stat-lbl">Adopted</div></div><div class="stat-icon si-amber">🏠</div></div><div class="stat-sub">Happy families</div></div>
+          <div class="stat"><div class="stat-accent sa-sky"></div><div class="stat-top"><div><div class="stat-num" id="d-enq">—</div><div class="stat-lbl">Enquiries</div></div><div class="stat-icon si-sky">📩</div></div><div class="stat-sub" id="d-enq-p">—</div></div>
+          <div class="stat"><div class="stat-accent sa-blush"></div><div class="stat-top"><div><div class="stat-num" id="d-ap">—</div><div class="stat-lbl">Appointments</div></div><div class="stat-icon si-blush">📅</div></div><div class="stat-sub" id="d-ap-p">—</div></div>
+        </div>
+        <div class="stats-row" style="grid-template-columns:repeat(3,1fr)">
+          <div class="stat"><div class="stat-accent sa-sage"></div><div class="stat-top"><div><div class="stat-num" id="d-users">—</div><div class="stat-lbl">Users</div></div><div class="stat-icon si-sage">👥</div></div></div>
+          <div class="stat"><div class="stat-accent sa-sky"></div><div class="stat-top"><div><div class="stat-num" id="d-blog">—</div><div class="stat-lbl">Blog Posts</div></div><div class="stat-icon si-sky">📰</div></div></div>
+          <div class="stat"><div class="stat-accent sa-amber"></div><div class="stat-top"><div><div class="stat-num" id="d-sur">—</div><div class="stat-lbl">Surrenders</div></div><div class="stat-icon si-amber">🏠</div></div><div class="stat-sub" id="d-sur-p">—</div></div>
+        </div>
+        <div class="stats-row" style="grid-template-columns:repeat(3,1fr)">
+          <div class="stat"><div class="stat-accent sa-blush"></div><div class="stat-top"><div><div class="stat-num" id="d-apps">—</div><div class="stat-lbl">Applications</div></div><div class="stat-icon si-blush">📋</div></div><div class="stat-sub" id="d-apps-p">—</div></div>
+          <div class="stat"><div class="stat-accent sa-sky"></div><div class="stat-top"><div><div class="stat-num" id="d-lf">—</div><div class="stat-lbl">Lost &amp; Found Open</div></div><div class="stat-icon si-sky">🔍</div></div><div class="stat-sub" id="d-lf-p">—</div></div>
+          <div class="stat"><div class="stat-accent sa-amber"></div><div class="stat-top"><div><div class="stat-num" id="d-stories">—</div><div class="stat-lbl">Success Stories</div></div><div class="stat-icon si-amber">❤️</div></div><div class="stat-sub" id="d-stories-p">—</div></div>
+        </div>
+        <div class="chart-card" style="margin-top:1.4rem">
+          <div class="chart-hd"><h3>Adoption Application Pipeline</h3></div>
+          <div class="pipeline" id="dash-pipeline" style="margin-top:.5rem"></div>
+        </div>
+        <div class="chart-row">
+          <div class="chart-card"><div class="chart-hd"><h3>Pet Status</h3></div><canvas id="c-status" height="180"></canvas><div class="cl" id="status-legend"></div></div>
+          <div class="chart-card"><div class="chart-hd"><h3>Species Mix</h3></div><canvas id="c-species" height="180"></canvas></div>
+          <div class="chart-card"><div class="chart-hd"><h3>Monthly Activity</h3><span style="font-size:.7rem;color:var(--ink-soft)">Last 6 months</span></div><canvas id="c-trends" height="180"></canvas></div>
+        </div>
+      </div>
+      <!-- Pets -->
+      <div class="admin-panel" id="ap-pets">
+        <div class="panel-hd"><div><h2>Manage Pets</h2><p>Add, edit, upload images, and update listings</p></div><button class="btn btn-forest" onclick="openPetModal()">+ Add New Pet</button></div>
+        <div class="tc">
+          <div class="tc-head"><h3>All Pets</h3><input class="srch" type="text" placeholder="Search pets…" oninput="renderAdminPets(adminPetsCache.filter(p=>p.name.toLowerCase().includes(this.value.toLowerCase())||p.breed.toLowerCase().includes(this.value.toLowerCase())))"></div>
+          <table><thead><tr><th>Photo</th><th>Name</th><th>Species/Breed</th><th>Age</th><th>Gender</th><th>Vacc.</th><th>Status</th><th>Actions</th></tr></thead><tbody id="admin-pets-tb"></tbody></table>
+        </div>
+      </div>
+      <!-- Surrenders -->
+      <div class="admin-panel" id="ap-surrenders">
+        <div class="panel-hd"><div><h2>Surrender Inbox</h2><p>Pets submitted by owners seeking shelter placement</p></div></div>
+        <div class="tc"><table><thead><tr><th>Photo</th><th>Pet</th><th>Owner</th><th>Species</th><th>Reason</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead><tbody id="admin-surr-tb"></tbody></table></div>
+      </div>
+      <!-- Enquiries -->
+      <div class="admin-panel" id="ap-enquiries">
+        <div class="panel-hd"><div><h2>Enquiries</h2><p>Adoption requests submitted by the public</p></div></div>
+        <div class="tc"><table><thead><tr><th>Date</th><th>Name</th><th>Email</th><th>Phone</th><th>Pet</th><th>Status</th><th>Actions</th></tr></thead><tbody id="admin-enq-tb"></tbody></table></div>
+      </div>
+      <!-- Appointments -->
+      <div class="admin-panel" id="ap-appointments">
+        <div class="panel-hd"><div><h2>Appointments</h2><p>Visit requests from prospective adopters</p></div></div>
+        <div class="tc"><table><thead><tr><th>Date</th><th>Visitor</th><th>Email</th><th>Pet</th><th>Time</th><th>Status</th><th>Actions</th></tr></thead><tbody id="admin-ap-tb"></tbody></table></div>
+      </div>
+      <!-- Blog -->
+      <div class="admin-panel" id="ap-blog">
+        <div class="panel-hd"><div><h2>Blog Posts</h2><p>Create and manage pet care articles</p></div><button class="btn btn-forest" onclick="openBlogModal()">+ New Article</button></div>
+        <div class="tc"><table><thead><tr><th>Title</th><th>Category</th><th>Author</th><th>Date</th><th>Actions</th></tr></thead><tbody id="admin-blog-tb"></tbody></table></div>
+      </div>
+
+      <!-- Applications Panel -->
+      <div class="admin-panel" id="ap-admin-apps">
+        <div class="panel-hd"><div><h2>Adoption Applications</h2><p>Track every application through the full adoption pipeline</p></div><button class="btn btn-forest btn-sm" onclick="loadAdminApps()">⟳ Refresh</button></div>
+        <!-- Pipeline summary cards -->
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:.75rem;margin-bottom:1.5rem" id="apps-pipeline-summary"></div>
+        <!-- Status filter tabs -->
+        <div style="display:flex;gap:.4rem;margin-bottom:1.2rem;flex-wrap:wrap" id="apps-filter-tabs">
+          <button class="admin-tab-btn active" onclick="filterAdminApps('all',this)">All</button>
+          <button class="admin-tab-btn" onclick="filterAdminApps('submitted',this)">📋 Submitted</button>
+          <button class="admin-tab-btn" onclick="filterAdminApps('under_review',this)">🔍 Under Review</button>
+          <button class="admin-tab-btn" onclick="filterAdminApps('interview_scheduled',this)">📞 Interview</button>
+          <button class="admin-tab-btn" onclick="filterAdminApps('approved',this)">✅ Approved</button>
+          <button class="admin-tab-btn" onclick="filterAdminApps('rejected',this)">✗ Rejected</button>
+        </div>
+        <div class="tc"><table><thead><tr><th>Date</th><th>Applicant</th><th>Pet</th><th>Home</th><th>Kids/Pets</th><th>Status</th><th>Actions</th></tr></thead><tbody id="admin-apps-tb"></tbody></table></div>
+      </div>
+
+      <!-- Lost & Found Panel -->
+      <div class="admin-panel" id="ap-admin-lf">
+        <div class="panel-hd"><div><h2>Lost &amp; Found</h2><p>All reported lost and found pet cases</p></div></div>
+        <div class="tc"><table><thead><tr><th>Photo</th><th>Type</th><th>Pet</th><th>Area</th><th>Reporter</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead><tbody id="admin-lf-tb"></tbody></table></div>
+      </div>
+
+      <!-- Success Stories Panel -->
+      <div class="admin-panel" id="ap-admin-stories">
+        <div class="panel-hd"><div><h2>Success Stories</h2><p>Review and approve adoption stories submitted by users</p></div><button class="btn btn-forest btn-sm" onclick="loadAdminStories()">⟳ Refresh</button></div>
+        <div class="tc"><table><thead><tr><th>Photo</th><th>Title</th><th>Pet</th><th>Adopter</th><th>Year</th><th>Status</th><th>Actions</th></tr></thead><tbody id="admin-stories-tb"></tbody></table></div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ═══ MODALS ═══ -->
+
+<!-- Pet detail -->
+<div class="overlay" id="petDetailModal" onclick="closeOv('petDetailModal',event)">
+  <div class="modal">
+    <div class="modal-iw" id="pdm-iw"><span class="modal-emoji" id="pdm-emoji"></span><img id="pdm-img" src="" alt="" style="display:none"></div>
+    <button class="modal-x" onclick="document.getElementById('petDetailModal').classList.remove('open')">✕</button>
+    <div class="modal-body">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.3rem">
+        <div class="modal-title" id="pdm-name"></div><span id="pdm-badge" class="chip"></span>
+      </div>
+      <div class="modal-breed" id="pdm-breed"></div>
+      <div class="modal-grid">
+        <div class="mf"><label>Age</label><span id="pdm-age"></span></div>
+        <div class="mf"><label>Gender</label><span id="pdm-gender"></span></div>
+        <div class="mf"><label>Vaccination</label><span id="pdm-vacc"></span></div>
+        <div class="mf"><label>Weight</label><span id="pdm-weight"></span></div>
+        <div class="mf"><label>Colour</label><span id="pdm-color"></span></div>
+        <div class="mf"><label>Species</label><span id="pdm-species"></span></div>
+      </div>
+      <div class="modal-desc" id="pdm-desc"></div>
+      <div id="pdm-health"></div><div id="pdm-adopt-info"></div>
+      <div class="modal-acts" id="pdm-acts"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Pet form -->
+<div class="overlay" id="petFormModal" onclick="closeOv('petFormModal',event)">
+  <div class="modal" style="max-width:700px">
+    <div class="modal-body" style="padding:2rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+        <h2 id="pfm-title" style="font-family:var(--font-d);font-size:1.65rem;font-weight:700">Add New Pet</h2>
+        <button onclick="document.getElementById('petFormModal').classList.remove('open')" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--ink-mid)">✕</button>
+      </div>
+      <input type="hidden" id="pfm-id">
+      <div style="margin-bottom:1.4rem">
+        <div class="sec-lbl" style="color:var(--sage);border-color:var(--sage-l)">Pet Photo</div>
+        <div class="img-drop">
+          <input type="file" id="pfm-img" accept="image/*" onchange="previewImg('pfm-img','pfm-img-prev')">
+          <div class="up-ico">📷</div><p>Click or drag & drop — PNG, JPG, WEBP</p>
+          <img id="pfm-img-prev" class="img-prev" alt="Preview">
+        </div>
+        <div id="pfm-cur-img" style="margin-top:.5rem;font-size:.75rem;color:var(--ink-soft)"></div>
+      </div>
+      <div class="sec-lbl" style="color:var(--sage);border-color:var(--sage-l)">Pet Details</div>
+      <div class="form-grid">
+        <div class="fg2"><label>Name *</label><input type="text" id="pfm-name" placeholder="e.g. Buddy"></div>
+        <div class="fg2"><label>Species *</label><select id="pfm-species"><option>Dog</option><option>Cat</option><option>Rabbit</option><option>Bird</option><option>Hamster</option></select></div>
+        <div class="fg2"><label>Breed *</label><input type="text" id="pfm-breed" placeholder="e.g. Golden Retriever"></div>
+        <div class="fg2"><label>Age (years)</label><input type="number" id="pfm-age" min="0" max="30" step="0.5" placeholder="2"></div>
+        <div class="fg2"><label>Gender</label><select id="pfm-gender"><option>Male</option><option>Female</option></select></div>
+        <div class="fg2"><label>Status</label><select id="pfm-status" onchange="toggleAdopterSec()"><option value="available">Available</option><option value="pending">Pending</option><option value="adopted">Adopted</option></select></div>
+        <div class="fg2"><label>Vaccinated</label><select id="pfm-vacc"><option value="true">Yes ✓</option><option value="false">No</option></select></div>
+        <div class="fg2"><label>Weight</label><input type="text" id="pfm-weight" placeholder="e.g. 28 kg"></div>
+        <div class="fg2"><label>Colour/Coat</label><input type="text" id="pfm-color" placeholder="e.g. Golden"></div>
+        <div class="fg2 full"><label>Description *</label><textarea id="pfm-desc" placeholder="Describe personality, history, and what makes this pet special…"></textarea></div>
+        <div class="fg2 full"><label>Health Notes</label><textarea id="pfm-health" placeholder="Vaccinations, medical history, dietary needs…" style="min-height:70px"></textarea></div>
+        <div id="adopter-sec" style="display:none;grid-column:1/-1">
+          <div class="sec-lbl" style="color:var(--amber);border-color:#e8c8a0">Adoption Details</div>
+          <div class="form-grid">
+            <div class="fg2"><label>Adopter Name</label><input type="text" id="pfm-adopter" placeholder="Adopter's name (optional)"></div>
+            <div class="fg2"><label>Adoption Date</label><input type="date" id="pfm-adopt-date"></div>
+            <div class="fg2 full"><label>Adopter's Message</label><textarea id="pfm-adopter-msg" placeholder="Message from adopter…" style="min-height:60px"></textarea></div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:.75rem;margin-top:1.75rem">
+        <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="document.getElementById('petFormModal').classList.remove('open')">Cancel</button>
+        <button class="btn btn-forest" style="flex:2;justify-content:center" onclick="savePet()">Save Pet 🐾</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Blog form -->
+<div class="overlay" id="blogFormModal" onclick="closeOv('blogFormModal',event)">
+  <div class="modal" style="max-width:620px">
+    <div class="modal-body" style="padding:2rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+        <h2 style="font-family:var(--font-d);font-size:1.5rem;font-weight:700">Write Article</h2>
+        <button onclick="document.getElementById('blogFormModal').classList.remove('open')" style="background:none;border:none;font-size:1.2rem;cursor:pointer">✕</button>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1rem">
+        <div class="fg2"><label>Title *</label><input type="text" id="bfm-title" placeholder="Article title…"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div class="fg2"><label>Category</label><select id="bfm-cat"><option>Care Tips</option><option>Health</option><option>Nutrition</option><option>Training</option><option>Adoption</option></select></div>
+          <div class="fg2"><label>Emoji</label><select id="bfm-emoji"><option value="🐾">🐾 General</option><option value="🏥">🏥 Health</option><option value="🍖">🍖 Food</option><option value="🎾">🎾 Play</option><option value="❤️">❤️ Love</option><option value="💉">💉 Vaccines</option></select></div>
+        </div>
+        <div class="fg2"><label>Summary *</label><textarea id="bfm-summary" placeholder="One-paragraph overview…" style="min-height:80px"></textarea></div>
+        <div class="fg2"><label>Full Content</label><textarea id="bfm-content" placeholder="Full article content…" style="min-height:120px"></textarea></div>
+        <button class="btn btn-forest" style="justify-content:center" onclick="saveBlog()">Publish Article 📰</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Surrender review -->
+<div class="overlay" id="surrModal" onclick="closeOv('surrModal',event)">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-body" style="padding:2rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+        <h2 style="font-family:var(--font-d);font-size:1.5rem;font-weight:700">Surrender Submission</h2>
+        <button onclick="document.getElementById('surrModal').classList.remove('open')" style="background:none;border:none;font-size:1.2rem;cursor:pointer">✕</button>
+      </div>
+      <div id="surr-content"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-top:1.5rem" id="surr-acts"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Chatbot guide FAB -->
+<button class="chat-fab" onclick="toggleCG()" title="Chatbot Setup Guide" id="cg-fab">🤖</button>
+<div class="cg-wrap" id="cg-wrap">
+  <div class="cg-head">
+    <div class="cg-av">🤖</div>
+    <div class="cg-hi"><h4>Chatbot Integration Guide</h4><p>Set up PawsBot in minutes</p></div>
+    <button class="cg-x" onclick="toggleCG()">✕</button>
+  </div>
+  <div class="cg-body">
+    <div class="cg-intro">
+      <strong>🐾 Three Ways to Add PawsBot</strong>
+      Choose direct Claude API integration, n8n no-code automation, or a plug-and-play third-party widget.
+    </div>
+
+    <div class="cg-step">
+      <h5><span class="cg-sn">A</span> Direct Claude API (Recommended)</h5>
+      <p>Add your Anthropic key to app.py and enable the /api/chat endpoint.</p>
+      <p style="margin-top:.5rem"><strong>1.</strong> Get your key: <a href="https://console.anthropic.com" target="_blank" style="color:var(--sage)">console.anthropic.com</a></p>
+      <p><strong>2.</strong> Add to app.py:</p>
+      <div class="cg-code">pip install anthropic
+
+import anthropic
+ANTHROPIC_KEY = "sk-ant-YOUR_KEY_HERE"
+
+@app.route('/api/chat', methods=['POST'])
+def chat():
+    data = request.json or {}
+    client = anthropic.Anthropic(api_key=ANTHROPIC_KEY)
+    msg = client.messages.create(
+        model="claude-sonnet-4-20250514",
+        max_tokens=300,
+        system="You are PawsBot, adoption assistant for PawsHome.",
+        messages=[{"role":"user","content":data.get("message","")}]
+    )
+    return jsonify({"reply": msg.content[0].text})</div>
+      <p><strong>3.</strong> In index.html, update <code style="background:var(--bone-d);padding:1px 5px;border-radius:3px;font-size:.72rem">sendChat()</code> to call <code style="background:var(--bone-d);padding:1px 5px;border-radius:3px;font-size:.72rem">fetch('/api/chat', ...)</code></p>
+    </div>
+
+    <div class="cg-step">
+      <h5><span class="cg-sn" style="background:var(--amber)">B</span> n8n Webhook (No-Code)</h5>
+      <p>n8n forwards messages to Claude and returns replies via a webhook — no code needed.</p>
+      <div class="cg-code">n8n Workflow:
+① Webhook Trigger (POST /webhook/pawsbot)
+② HTTP Request → Anthropic API
+   URL: https://api.anthropic.com/v1/messages
+   Header: x-api-key: YOUR_KEY
+   Body: { model, messages, max_tokens }
+③ Respond to Webhook → return reply text</div>
+      <a class="cg-btn" href="https://n8n.io" target="_blank"><span>⚡</span> Open n8n.io — Free self-hosted</a>
+    </div>
+
+    <div class="cg-step">
+      <h5><span class="cg-sn" style="background:var(--sky)">C</span> Tidio / Crisp (Plug & Play)</h5>
+      <p>Drop one script tag in index.html for a fully-managed AI chat widget.</p>
+      <div class="cg-code">&lt;!-- Add before &lt;/body&gt; --&gt;
+&lt;script src="//code.tidio.co/YOUR_KEY.js" async&gt;&lt;/script&gt;</div>
+      <a class="cg-btn" href="https://tidio.com" target="_blank"><span>💬</span> Tidio — Free plan available</a>
+      <a class="cg-btn" href="https://crisp.chat" target="_blank"><span>💬</span> Crisp — Free for small teams</a>
+    </div>
+
+    <div style="background:var(--bone-d);border-radius:var(--r-sm);padding:.85rem;font-size:.76rem;color:var(--ink-mid);line-height:1.65;margin-top:.5rem">
+      💡 Once <code style="font-size:.72rem">/api/chat</code> is working, the 🤖 button becomes a live PawsBot chat window. Replace this guide panel with a standard chat UI.
+    </div>
+  </div>
+</div>
+
+<!-- ═══ APPLICATIONS PAGE ═══ -->
+<div class="page" id="page-applications">
+  <section class="section">
+    <div class="container">
+      <div class="sh"><h2>Adoption <span class="accent">Application</span></h2><p>Submit a formal application to adopt your chosen pet — we review every application personally.</p></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start">
+        <div class="form-card">
+          <h3 style="font-family:var(--font-d);font-size:1.3rem;font-weight:700;margin-bottom:.4rem">New Application</h3>
+          <p style="color:var(--ink-mid);font-size:.85rem;font-weight:300;margin-bottom:1.4rem">Tell us about yourself and why you'd be a great adopter.</p>
+          <!-- Pipeline visual -->
+          <div style="background:var(--bone-d);border-radius:var(--r-lg);padding:1.1rem;margin-bottom:1.4rem">
+            <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-mid);margin-bottom:.85rem">Application Journey</div>
+            <div class="pipeline" style="margin:0">
+              <div class="pip-step active"><div class="pip-circle">📋</div><div class="pip-label">Submitted</div></div>
+              <div class="pip-step"><div class="pip-circle">🔍</div><div class="pip-label">Under Review</div></div>
+              <div class="pip-step"><div class="pip-circle">📞</div><div class="pip-label">Interview</div></div>
+              <div class="pip-step"><div class="pip-circle">✅</div><div class="pip-label">Approved</div></div>
+              <div class="pip-step"><div class="pip-circle">🏠</div><div class="pip-label">Adopted</div></div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:.9rem">
+            <div class="fg2"><label>Pet You Wish to Adopt *</label><select id="app-pet"><option value="">Select a pet…</option></select></div>
+            <div class="fg2"><label>Your Full Name *</label><input type="text" id="app-name" placeholder="As on your ID"></div>
+            <div class="fg2"><label>Email *</label><input type="email" id="app-email" placeholder="your@email.com"></div>
+            <div class="fg2"><label>Phone</label><input type="tel" id="app-phone" placeholder="+91 98765 43210"></div>
+            <div class="fg2"><label>Home Address</label><input type="text" id="app-address" placeholder="Street, Area, City, PIN"></div>
+            <div class="fg2"><label>Living Situation</label>
+              <select id="app-living">
+                <option value="">Select…</option>
+                <option>Own house with garden</option>
+                <option>Own house, no garden</option>
+                <option>Apartment (with permission for pets)</option>
+                <option>Rented (with owner permission)</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.9rem">
+              <div class="fg2"><label>Children at Home?</label>
+                <select id="app-children"><option value="0">No</option><option value="1">Yes</option></select>
+              </div>
+              <div class="fg2"><label>Other Pets?</label>
+                <select id="app-otherpets"><option value="0">No</option><option value="1">Yes</option></select>
+              </div>
+            </div>
+            <div class="fg2"><label>Previous Pet Experience</label><textarea id="app-exp" placeholder="Have you owned pets before? Tell us about them…" style="min-height:68px"></textarea></div>
+            <div class="fg2"><label>Why Do You Want to Adopt This Pet? *</label><textarea id="app-reason" placeholder="Share what draws you to this pet and how you plan to care for them…"></textarea></div>
+            <button class="btn btn-forest" onclick="submitApplication()" style="justify-content:center;width:100%">📋 Submit Application</button>
+          </div>
+        </div>
+        <div>
+          <h3 style="font-family:var(--font-d);font-size:1.2rem;font-weight:700;margin-bottom:1.2rem">Your Applications</h3>
+          <div id="user-applications">
+            <div class="empty"><div class="eico">📋</div><h3>No applications yet</h3><p>Sign in and submit your first application above</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ═══ LOST & FOUND PAGE ═══ -->
+<div class="page" id="page-lostfound">
+  <section class="section">
+    <div class="container">
+      <div class="sh-row">
+        <div><h2>Lost <span class="accent">&</span> Found</h2><p>Help reunite pets with their families — report a lost or found animal.</p></div>
+        <button class="btn btn-forest" onclick="openLFModal()" id="lf-report-btn">+ Report a Pet</button>
+      </div>
+      <div class="lf-tabs">
+        <button class="lf-tab all active" onclick="filterLF('all',this)">🐾 All Reports</button>
+        <button class="lf-tab lost" onclick="filterLF('lost',this)">🔴 Lost Pets</button>
+        <button class="lf-tab found" onclick="filterLF('found',this)">🟢 Found Pets</button>
+      </div>
+      <div class="lf-grid" id="lf-grid"></div>
+      <div id="lf-empty" class="empty" style="display:none"><div class="eico">🔍</div><h3>No reports yet</h3><p>Be the first to help reunite a pet with their family</p></div>
+    </div>
+  </section>
+</div>
+
+<!-- ═══ SUCCESS STORIES PAGE ═══ -->
+<div class="page" id="page-stories">
+  <section class="section">
+    <div style="background:linear-gradient(135deg,var(--sage-pale),var(--amber-pale));padding:3rem 2rem;text-align:center;margin-bottom:3rem">
+      <div style="font-size:3rem;margin-bottom:.75rem">❤️</div>
+      <h2 style="font-family:var(--font-d);font-size:2rem;font-weight:700;margin-bottom:.5rem">Adoption Success Stories</h2>
+      <p style="color:var(--ink-mid);max-width:520px;margin:0 auto 1.5rem;line-height:1.7;font-weight:300">Real families, real joy. Read how PawsHome has changed lives — both human and animal.</p>
+      <button class="btn btn-forest btn-lg" onclick="openStoryModal()" id="share-story-btn">Share Your Story ❤️</button>
+    </div>
+    <div class="container">
+      <div class="stories-grid" id="stories-grid"></div>
+      <div id="stories-empty" class="empty" style="display:none"><div class="eico">❤️</div><h3>No stories yet</h3><p>Be the first to share your adoption journey!</p></div>
+    </div>
+  </section>
+</div>
+
+<!-- ═══ STORY DETAIL MODAL ═══ -->
+<!-- ═══ BLOG ARTICLE DETAIL MODAL ═══ -->
+<div class="story-full-overlay" id="blogDetailModal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="story-full-modal">
+    <div class="story-full-img" id="bdm-banner"><span id="bdm-emoji" style="font-size:5rem"></span></div>
+    <button style="position:absolute;top:1rem;right:1rem;background:rgba(255,255,255,.9);border:none;width:38px;height:38px;border-radius:50%;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10" onclick="document.getElementById('blogDetailModal').classList.remove('open')">✕</button>
+    <div class="story-full-body">
+      <span class="blog-cat" id="bdm-cat" style="margin-bottom:.85rem;display:inline-block"></span>
+      <div class="story-full-title" id="bdm-title"></div>
+      <div style="font-size:.82rem;color:var(--ink-soft);margin-bottom:1.4rem" id="bdm-meta"></div>
+      <div class="story-full-text" id="bdm-content"></div>
+    </div>
+  </div>
+</div>
+
+<div class="story-full-overlay" id="storyDetailModal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="story-full-modal">
+    <div class="story-full-img"><span id="sfm-emoji"></span><img id="sfm-img" src="" alt="" style="display:none"></div>
+    <button style="position:absolute;top:1rem;right:1rem;background:rgba(255,255,255,.9);border:none;width:38px;height:38px;border-radius:50%;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10" onclick="document.getElementById('storyDetailModal').classList.remove('open')">✕</button>
+    <div class="story-full-body">
+      <div id="sfm-pet-chip" class="story-pet-chip" style="margin-bottom:.85rem"></div>
+      <div class="story-full-title" id="sfm-title"></div>
+      <div style="font-size:.82rem;color:var(--ink-soft);margin-bottom:1.2rem" id="sfm-meta"></div>
+      <div class="story-full-text" id="sfm-text"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ LOST & FOUND REPORT MODAL ═══ -->
+<div class="overlay" id="lfModal" onclick="closeOv('lfModal',event)">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-body" style="padding:2rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.4rem">
+        <h2 style="font-family:var(--font-d);font-size:1.5rem;font-weight:700" id="lf-modal-title">Report a Pet</h2>
+        <button onclick="document.getElementById('lfModal').classList.remove('open')" style="background:none;border:none;font-size:1.2rem;cursor:pointer">✕</button>
+      </div>
+      <div style="display:flex;gap:.5rem;margin-bottom:1.4rem">
+        <button class="lf-tab lost active" id="lf-type-lost" onclick="setLFType('lost')">🔴 Lost Pet</button>
+        <button class="lf-tab found" id="lf-type-found" onclick="setLFType('found')">🟢 Found Pet</button>
+      </div>
+      <input type="hidden" id="lf-type" value="lost">
+      <div class="form-grid">
+        <div class="fg2"><label>Pet's Name</label><input type="text" id="lf-pname" placeholder="If known"></div>
+        <div class="fg2"><label>Species *</label><select id="lf-species"><option value="">Select…</option><option>Dog</option><option>Cat</option><option>Rabbit</option><option>Bird</option><option>Hamster</option><option>Other</option></select></div>
+        <div class="fg2"><label>Breed</label><input type="text" id="lf-breed" placeholder="e.g. Labrador"></div>
+        <div class="fg2"><label>Colour / Markings</label><input type="text" id="lf-color" placeholder="e.g. Brown with white patches"></div>
+        <div class="fg2"><label>Area / Landmark *</label><input type="text" id="lf-area" placeholder="e.g. Koramangala 5th Block"></div>
+        <div class="fg2"><label>Date Lost/Found *</label><input type="date" id="lf-date"></div>
+        <div class="fg2 full"><label>Description *</label><textarea id="lf-desc" placeholder="Describe the pet, any distinguishing features, collar, ID tag, behaviour, circumstances…"></textarea></div>
+        <div class="fg2"><label>Your Name</label><input type="text" id="lf-cname" placeholder="Contact name"></div>
+        <div class="fg2"><label>Contact Phone</label><input type="tel" id="lf-cphone" placeholder="+91 98765 43210"></div>
+        <div class="fg2 full">
+          <label>Photo</label>
+          <div class="img-drop">
+            <input type="file" id="lf-img" accept="image/*" onchange="previewImg('lf-img','lf-img-prev')">
+            <div class="up-ico">📷</div><p>Upload a photo — greatly increases chances of reunion</p>
+            <img id="lf-img-prev" class="img-prev" alt="Preview">
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-forest btn-lg" onclick="submitLFReport()" style="width:100%;justify-content:center;margin-top:1.5rem">Submit Report</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SUBMIT STORY MODAL ═══ -->
+<div class="overlay" id="storyModal" onclick="closeOv('storyModal',event)">
+  <div class="modal" style="max-width:620px">
+    <div class="modal-body" style="padding:2rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.4rem">
+        <h2 style="font-family:var(--font-d);font-size:1.5rem;font-weight:700">Share Your Story ❤️</h2>
+        <button onclick="document.getElementById('storyModal').classList.remove('open')" style="background:none;border:none;font-size:1.2rem;cursor:pointer">✕</button>
+      </div>
+      <p style="color:var(--ink-mid);font-size:.85rem;font-weight:300;margin-bottom:1.4rem">Stories are reviewed by our team before publishing. It usually takes 1-2 days.</p>
+      <div style="display:flex;flex-direction:column;gap:.9rem">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.9rem">
+          <div class="fg2"><label>Pet's Name *</label><input type="text" id="ss-pet" placeholder="e.g. Buddy"></div>
+          <div class="fg2"><label>Pet's Species</label><select id="ss-species"><option value="">Select…</option><option>Dog</option><option>Cat</option><option>Rabbit</option><option>Bird</option><option>Hamster</option><option>Other</option></select></div>
+          <div class="fg2"><label>Your Name *</label><input type="text" id="ss-adopter" placeholder="Your name"></div>
+          <div class="fg2"><label>Year Adopted</label><input type="number" id="ss-year" min="2010" max="2030" placeholder="2024"></div>
+        </div>
+        <div class="fg2"><label>Story Title *</label><input type="text" id="ss-title" placeholder="e.g. Luna Turned Our Apartment Into a Home"></div>
+        <div class="fg2"><label>Your Story *</label><textarea id="ss-story" placeholder="Share your adoption journey — the moment you first saw them, how they've changed your life, funny memories, milestones…" style="min-height:150px"></textarea></div>
+        <div class="fg2">
+          <label>Photo</label>
+          <div class="img-drop">
+            <input type="file" id="ss-img" accept="image/*" onchange="previewImg('ss-img','ss-img-prev')">
+            <div class="up-ico">📸</div><p>A photo makes your story come alive</p>
+            <img id="ss-img-prev" class="img-prev" alt="Preview">
+          </div>
+        </div>
+        <button class="btn btn-forest btn-lg" onclick="submitStory()" style="width:100%;justify-content:center">Submit Story ❤️</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ AI CHATBOT WIDGET ═══ -->
+<button class="ai-fab" onclick="toggleAI()" title="PawsBot — AI Pet Advisor">
+  🐾
+  <span class="ai-fab-pulse"></span>
+</button>
+<div class="ai-win" id="aiWin">
+  <div class="ai-head">
+    <div class="ai-av">🐾</div>
+    <div class="ai-head-info">
+      <h4>PawsBot AI</h4>
+      <p>Your personal pet adoption advisor</p>
+    </div>
+    <button class="ai-x" onclick="toggleAI()">✕</button>
+  </div>
+  <div class="ai-msgs" id="aiMsgs">
+    <div class="ai-msg bot"><div class="ai-bubble">Hi! 👋 I'm <strong>PawsBot</strong>, your AI pet advisor. Tell me about your lifestyle and I'll recommend the perfect pet from our shelter — with real-time data on what's available!<br><br>Try asking me something like: <em>"I live in an apartment with two kids"</em> or <em>"Which dog is best for an active person?"</em></div></div>
+  </div>
+  <div class="ai-quick" id="aiQuick">
+    <button class="ai-qbtn" onclick="sendAIQuick('I live in an apartment')">🏠 Apartment life</button>
+    <button class="ai-qbtn" onclick="sendAIQuick('I have young children')">👶 Family with kids</button>
+    <button class="ai-qbtn" onclick="sendAIQuick('I am very busy and work long hours')">⏰ Busy lifestyle</button>
+    <button class="ai-qbtn" onclick="sendAIQuick('I love outdoor activities and running')">🏃 Active person</button>
+    <button class="ai-qbtn" onclick="sendAIQuick('What pets are available right now?')">🐾 Show all pets</button>
+    <button class="ai-qbtn" onclick="sendAIQuick('How does adoption work?')">📋 Adoption process</button>
+  </div>
+  <div class="ai-bar">
+    <input type="text" id="aiInput" placeholder="Ask me anything about pets…" onkeydown="if(event.key==='Enter')sendAI()">
+    <button class="ai-send" onclick="sendAI()">→</button>
+  </div>
+</div>
+
+<!-- ═══ JS ═══ -->
+<script>
+// BASE_PATH: auto-detects subdirectory so API calls work whether app is at
+// http://localhost/pawshome/ or http://localhost/ or any subfolder
+const BASE_PATH = (()=>{
+  const p = window.location.pathname.replace(/\/[^/]*$/, '');
+  return p === '/' ? '' : p;
+})();
+const API = BASE_PATH;
+
+// Helper: resolve uploaded image URL correctly for subdirectory deployment
+function imgUrl(url) {
+  if (!url) return null;
+  if (url.startsWith('http') || url.startsWith('/')) return url;
+  return BASE_PATH + '/' + url;
+}
+let token=localStorage.getItem('ph_tok')||null;
+let me=(() => {try{return JSON.parse(localStorage.getItem('ph_me')||'null')}catch{return null}})();
+
+// ── UTILS ──
+const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const al=a=>a<1?`${Math.round(a*12)} months`:`${a} yr${a!==1?'s':''}`;
+const fd=d=>d?new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'—';
+const BG={Dog:'#C4D9C5',Cat:'#F2DDD3',Rabbit:'#FEF3C7',Bird:'#DBEAFE',Hamster:'#E8E5DE'};
+const EM={Dog:'🐶',Cat:'🐱',Rabbit:'🐰',Bird:'🐦',Hamster:'🐹'};
+const bg=s=>BG[s]||'#EDF4EE';
+
+// ── API ──
+async function api(method,path,body=null,form=false){
+  const opts={method,headers:{'X-Auth-Token':token||''}};
+  if(body&&!form){opts.headers['Content-Type']='application/json';opts.body=JSON.stringify(body)}
+  else if(body&&form){opts.body=body}
+  const r=await fetch(API+path,opts);
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(d.error||`HTTP ${r.status}`);
+  return d;
+}
+
+// ── TOAST ──
+function toast(title,msg,err=false){
+  const w=document.getElementById('toastWrap');
+  const t=document.createElement('div');
+  t.className=`toast${err?' err':''}`;
+  t.innerHTML=`<div class="toast-t">${err?'✗ ':'✓ '}${esc(title)}</div><div class="toast-s">${esc(msg)}</div>`;
+  w.appendChild(t);
+  setTimeout(()=>{t.style.cssText='opacity:0;transform:translateX(24px);transition:all .3s';setTimeout(()=>t.remove(),350)},3800);
+}
+
+// ── DARK ──
+function toggleDark(){
+  document.body.classList.toggle('dark');
+  document.getElementById('dark-btn').textContent=document.body.classList.contains('dark')?'☀️':'🌙';
+  localStorage.setItem('ph_dark',document.body.classList.contains('dark'));
+}
+if(localStorage.getItem('ph_dark')==='true'){document.body.classList.add('dark');document.getElementById('dark-btn').textContent='☀️'}
+
+// ── SCROLL NAV ──
+window.addEventListener('scroll',()=>document.getElementById('topbar').classList.toggle('scrolled',scrollY>10),{passive:true});
+
+// ── IMAGE PREVIEW ──
+function previewImg(inp,prev){
+  const f=document.getElementById(inp)?.files?.[0];
+  const p=document.getElementById(prev);
+  if(!f||!p)return;
+  const r=new FileReader();
+  r.onload=e=>{p.src=e.target.result;p.style.display='block'};
+  r.readAsDataURL(f);
+}
+
+// ── HAMBURGER ──
+function toggleMob(){
+  const ov=document.getElementById('mob-overlay');
+  const btn=document.getElementById('ham-btn');
+  const open=ov.classList.toggle('open');
+  btn.classList.toggle('open',open);
+  document.body.style.overflow=open?'hidden':'';
+}
+function closeMobBackdrop(e){if(e.target===document.getElementById('mob-overlay'))toggleMob()}
+function toggleNavMore(e){
+  e.stopPropagation();
+  document.getElementById('nav-more').classList.toggle('open');
+}
+function closeNavMore(){
+  document.getElementById('nav-more').classList.remove('open');
+}
+// Close dropdown on click outside
+document.addEventListener('click',()=>closeNavMore());
+
+// ── NAVIGATION ──
+function nav(id){
+  // close mobile if open
+  const ov=document.getElementById('mob-overlay');
+  if(ov.classList.contains('open')){ov.classList.remove('open');document.getElementById('ham-btn').classList.remove('open');document.body.style.overflow=''}
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nl').forEach(l=>l.classList.remove('active'));
+  const pg=document.getElementById('page-'+id);
+  if(!pg)return;
+  pg.classList.add('active');
+  document.querySelectorAll(`.nl[onclick="nav('${id}')"]`).forEach(l=>l.classList.add('active'));
+  window.scrollTo({top:0,behavior:'instant'});
+  ({
+    home:loadHome, pets:loadPets, adopted:loadAdopted, blog:loadBlog,
+    enquiry:()=>{loadEnqPets();prefillEnq()},
+    appointments:()=>{loadApptPets();loadUserAppts()},
+    profile:()=>{if(!me){nav('login');return}renderProfile()},
+    applications:()=>{loadAppPets();if(me)loadUserApps()},
+    lostfound:()=>loadLF('all'),
+    stories:()=>loadStories(),
+    admin:()=>{if(!me||me.role!=='admin'){nav('login');return}loadDashboard();loadAdminPets();loadAdminEnq();loadAdminAppts();loadAdminBlog();loadAdminSurr();loadAdminApps();loadAdminLF();loadAdminStories()}
+  })[id]?.();
+}
+
+// ── AUTH NAV ──
+function renderNav(){
+  const el=document.getElementById('nav-auth');
+  const mob=document.getElementById('mob-auth');
+  if(me){
+    const adBtn=me.role==='admin'?`<button class="btn btn-sm" style="background:var(--forest);color:#fff" onclick="nav('admin')">⚙ Admin</button>`:'';
+    el.innerHTML=`<button class="btn btn-ghost btn-sm" onclick="nav('profile')">👤 ${esc(me.name.split(' ')[0])}</button>${adBtn}<button class="btn btn-ghost btn-sm" onclick="doLogout()">Sign Out</button>`;
+    if(mob)mob.innerHTML=`<button class="mob-link" onclick="nav('profile');toggleMob()"><span>👤</span> My Profile</button>${me.role==='admin'?`<button class="mob-link" onclick="nav('admin');toggleMob()"><span>⚙</span> Admin Panel</button>`:''}<button class="mob-link" style="color:var(--blush)" onclick="doLogout()"><span>→</span> Sign Out</button>`;
+  }else{
+    el.innerHTML=`<button class="btn btn-ghost btn-sm" onclick="nav('login')">Sign In</button><button class="btn btn-forest btn-sm" onclick="nav('register')">Join Free</button>`;
+    if(mob)mob.innerHTML=`<button class="btn btn-ghost" onclick="nav('login');toggleMob()" style="width:100%;justify-content:center">Sign In</button><button class="btn btn-forest" onclick="nav('register');toggleMob()" style="width:100%;justify-content:center">Join Free</button>`;
+  }
+}
+
+// ── AUTH ──
+async function doLogin(){
+  const email=document.getElementById('lg-email').value.trim();
+  const pass=document.getElementById('lg-pass').value;
+  if(!email||!pass){toast('Missing fields','Enter email and password',true);return}
+  try{
+    const d=await api('POST','/api/auth/login',{email,password:pass});
+    token=d.token;me=d.user;
+    localStorage.setItem('ph_tok',token);localStorage.setItem('ph_me',JSON.stringify(me));
+    renderNav();toast('Welcome back!',`Signed in as ${me.name}`);
+    nav(me.role==='admin'?'admin':'home');
+  }catch(e){toast('Login failed',e.message,true)}
+}
+async function doRegister(){
+  const name=document.getElementById('rg-name').value.trim();
+  const email=document.getElementById('rg-email').value.trim();
+  const phone=document.getElementById('rg-phone').value.trim();
+  const pass=document.getElementById('rg-pass').value;
+  const pass2=document.getElementById('rg-pass2').value;
+  if(!name||!email||!pass){toast('Missing fields','Fill all required fields',true);return}
+  if(pass.length<6){toast('Weak password','Minimum 6 characters required',true);return}
+  if(pass!==pass2){toast('Mismatch','Passwords do not match',true);return}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){toast('Invalid email','Enter a valid email address',true);return}
+  try{
+    const d=await api('POST','/api/auth/register',{name,email,phone,password:pass});
+    token=d.token;me=d.user;
+    localStorage.setItem('ph_tok',token);localStorage.setItem('ph_me',JSON.stringify(me));
+    renderNav();toast('Welcome!','Account created — welcome to PawsHome 🐾');
+    nav('home');
+  }catch(e){toast('Error',e.message,true)}
+}
+async function doLogout(){
+  try{await api('POST','/api/auth/logout')}catch(e){console.error(e)}
+  token=null;me=null;
+  localStorage.removeItem('ph_tok');localStorage.removeItem('ph_me');
+  renderNav();toast('Signed out','See you soon!');nav('home');
+}
+
+// ── OVERLAY CLOSE ──
+function closeOv(id,e){if(e.target.id===id)document.getElementById(id).classList.remove('open')}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.overlay.open').forEach(o=>o.classList.remove('open'))});
+
+// ── CHATBOT GUIDE ──
+function toggleCG(){document.getElementById('cg-wrap').classList.toggle('open')}
+
+// ── PET CARD ──
+function petCard(pet,showAdopt=false){
+  const favs=me?JSON.parse(localStorage.getItem('ph_favs_'+me.id)||'[]'):[];
+  const isFav=favs.includes(pet.id);
+  const badgeCls=pet.status==='available'?'b-avail':pet.status==='adopted'?'b-adopt':'b-pend';
+  const badgeTxt=pet.status==='available'?'✓ Available':pet.status==='adopted'?'🏠 Adopted':'⏳ Pending';
+  const adoptNote=showAdopt&&pet.status==='adopted'&&pet.adopter_name
+    ?`<div class="adopt-note"><strong>🏠 Adopted by ${esc(pet.adopter_name)}${pet.adopted_date?` · ${fd(pet.adopted_date)}`:''}</strong>${pet.adopter_message?`<em>"${esc(pet.adopter_message)}"</em>`:''}</div>`:''
+  const imgHtml=pet.image_url?`<img src="${esc(pet.image_url)}" alt="${esc(pet.name)}" loading="lazy">`:`<span class="pc-emoji">${EM[pet.species]||'🐾'}</span>`;
+  return `<div class="pc" onclick="openPetDetail(${pet.id})">
+    <div class="pc-img" style="background:${bg(pet.species)}">${imgHtml}</div>
+    <span class="pc-badge ${badgeCls}">${badgeTxt}</span>
+    <button class="pc-fav" onclick="event.stopPropagation();toggleFav(${pet.id})">${isFav?'❤️':'🤍'}</button>
+    <div class="pc-body">
+      <div class="pc-row"><div class="pc-name">${esc(pet.name)}</div><div class="pc-age">${al(pet.age)}</div></div>
+      <div class="pc-breed">${esc(pet.species)} · ${esc(pet.breed)}</div>
+      <div class="pc-tags">
+        <span class="pc-tag">${pet.gender==='Male'?'♂':'♀'} ${pet.gender}</span>
+        <span class="pc-tag ${pet.vaccinated?'vy':'vn'}">${pet.vaccinated?'✓ Vaccinated':'○ Not Vaccinated'}</span>
+        ${pet.weight?`<span class="pc-tag">⚖ ${esc(pet.weight)}</span>`:''}
+      </div>
+      <p class="pc-desc">${esc(pet.description)}</p>
+      ${adoptNote}
+      <div class="pc-foot">
+        <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openPetDetail(${pet.id})">Details</button>
+        ${pet.status==='available'?`<button class="btn btn-forest btn-sm" onclick="event.stopPropagation();quickEnq(${pet.id})">Enquire →</button>`:''}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── HOME ──
+async function loadHome(){
+  try{
+    const [pets,blogs]=await Promise.all([api('GET','/api/pets?status=available'),api('GET','/api/blog')]);
+    let stats={available_pets:pets.length,adopted_pets:'—',total_enquiries:'—',total_blog_posts:blogs.length};
+    try{stats=await api('GET','/api/stats')}catch(e){console.error(e)}
+    ['h-avail','h-adopt','h-enq','h-blog'].forEach((id,i)=>{
+      const v=[stats.available_pets,stats.adopted_pets,stats.total_enquiries,stats.total_blog_posts][i];
+      document.getElementById(id).textContent=v??'—';
+    });
+    document.getElementById('h-avail-b').textContent=pets.length+'+';
+    document.getElementById('h-adopt-b').textContent=(stats.adopted_pets||0)+'+';
+    document.getElementById('home-featured').innerHTML=pets.slice(0,3).map(p=>petCard(p)).join('')||'<div class="empty"><div class="eico">🐾</div><h3>No pets listed yet</h3></div>';
+    document.getElementById('home-blog').innerHTML=blogs.slice(0,3).map(blogCard).join('');
+  }catch(e){console.error(e)}
+}
+
+// ── PETS ──
+async function loadPets(){
+  const p=new URLSearchParams({status:'available'});
+  const s=document.getElementById('f-search')?.value.trim();
+  const sp=document.getElementById('f-species')?.value;
+  const g=document.getElementById('f-gender')?.value;
+  const a=document.getElementById('f-age')?.value;
+  const v=document.getElementById('f-vacc')?.value;
+  if(s)p.set('search',s);if(sp)p.set('species',sp);if(g)p.set('gender',g);if(a)p.set('age_range',a);if(v)p.set('vaccinated',v);
+  const gr=document.getElementById('pets-grid'),em=document.getElementById('pets-empty');
+  gr.innerHTML='<div class="spinner"></div>';
+  try{
+    const pets=await api('GET','/api/pets?'+p);
+    if(!pets.length){gr.innerHTML='';em.style.display='block'}
+    else{gr.innerHTML=pets.map(p=>petCard(p)).join('');em.style.display='none'}
+  }catch{gr.innerHTML='';em.style.display='block'}
+}
+function resetFilters(){['f-search','f-species','f-gender','f-age','f-vacc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});loadPets()}
+
+// ── ADOPTED ──
+async function loadAdopted(){
+  const gr=document.getElementById('adopted-grid'),em=document.getElementById('adopted-empty');
+  gr.innerHTML='<div class="spinner"></div>';
+  try{
+    const pets=await api('GET','/api/pets?status=adopted');
+    if(!pets.length){gr.innerHTML='';em.style.display='block'}
+    else{gr.innerHTML=pets.map(p=>petCard(p,true)).join('');em.style.display='none'}
+  }catch{gr.innerHTML='';em.style.display='block'}
+}
+
+// ── PET DETAIL ──
+async function openPetDetail(id){
+  try{
+    const pet=await api('GET','/api/pets/'+id);
+    const iw=document.getElementById('pdm-iw'),em=document.getElementById('pdm-emoji'),im=document.getElementById('pdm-img');
+    iw.style.background=bg(pet.species);
+    if(pet.image_url){im.src=pet.image_url;im.style.display='block';em.style.display='none'}
+    else{em.textContent=EM[pet.species]||'🐾';em.style.display='block';im.style.display='none'}
+    document.getElementById('pdm-name').textContent=pet.name;
+    document.getElementById('pdm-breed').textContent=`${pet.species} · ${pet.breed}`;
+    document.getElementById('pdm-age').textContent=al(pet.age);
+    document.getElementById('pdm-gender').textContent=pet.gender;
+    document.getElementById('pdm-weight').textContent=pet.weight||'—';
+    document.getElementById('pdm-color').textContent=pet.color||'—';
+    document.getElementById('pdm-species').textContent=pet.species;
+    const vEl=document.getElementById('pdm-vacc');
+    vEl.textContent=pet.vaccinated?'✓ Fully Vaccinated':'Not Vaccinated';
+    vEl.style.color=pet.vaccinated?'var(--sage)':'var(--blush)';
+    document.getElementById('pdm-desc').textContent=pet.description;
+    document.getElementById('pdm-health').innerHTML=pet.health_notes?`<div style="background:var(--sage-pale);border:1px solid #b8d9be;border-radius:var(--r-sm);padding:.7rem .9rem;font-size:.82rem;color:var(--sage);margin-bottom:1rem"><strong>Health Notes:</strong> ${esc(pet.health_notes)}</div>`:'';
+    document.getElementById('pdm-adopt-info').innerHTML=pet.status==='adopted'&&pet.adopter_name?`<div class="adopt-note" style="margin-bottom:1.2rem"><strong>🏠 Adopted by ${esc(pet.adopter_name)}${pet.adopted_date?` · ${fd(pet.adopted_date)}`:''}</strong>${pet.adopter_message?`<br><em>"${esc(pet.adopter_message)}"</em>`:''}</div>`:''
+    const badge=document.getElementById('pdm-badge');
+    badge.className=`chip chip-${pet.status}`;
+    badge.textContent=pet.status==='available'?'✓ Available':pet.status==='adopted'?'🏠 Adopted':'⏳ Pending';
+    const favs=me?JSON.parse(localStorage.getItem('ph_favs_'+me.id)||'[]'):[];
+    document.getElementById('pdm-acts').innerHTML=pet.status==='available'
+      ?`<button class="btn btn-forest" onclick="document.getElementById('petDetailModal').classList.remove('open');quickApply(${pet.id})">📋 Apply to Adopt</button>
+         <button class="btn btn-ghost" onclick="document.getElementById('petDetailModal').classList.remove('open');quickEnq(${pet.id})">📩 Quick Enquiry</button>
+         <button class="btn btn-ghost" onclick="document.getElementById('petDetailModal').classList.remove('open');quickAp(${pet.id})">📅 Book Visit</button>
+         <button class="btn btn-ghost" onclick="toggleFav(${pet.id})">${favs.includes(pet.id)?'💔 Unfavourite':'❤️ Favourite'}</button>`
+      :`<button class="btn btn-ghost" onclick="document.getElementById('petDetailModal').classList.remove('open')">Close</button>`;
+    document.getElementById('petDetailModal').classList.add('open');
+  }catch{toast('Error','Could not load pet details',true)}
+}
+
+// ── FAV ──
+async function toggleFav(petId){
+  if(!me){toast('Sign in required','Sign in to save favourites',true);nav('login');return}
+  try{
+    const d=await api('POST','/api/pets/'+petId+'/favorite');
+    localStorage.setItem('ph_favs_'+me.id,JSON.stringify(d.favorites));
+    toast(d.action==='added'?'Saved ❤️':'Removed',d.action==='added'?'Saved to favourites':'Removed from favourites');
+    if(document.getElementById('page-pets').classList.contains('active'))loadPets();
+    if(document.getElementById('page-adopted').classList.contains('active'))loadAdopted();
+    if(document.getElementById('page-home').classList.contains('active'))loadHome();
+    if(document.getElementById('page-profile').classList.contains('active'))loadFavs();
+  }catch(e){toast('Error',e.message,true)}
+}
+
+// ── ENQUIRY ──
+async function loadEnqPets(){
+  try{
+    const pets=await api('GET','/api/pets?status=available');
+    document.getElementById('enq-pet').innerHTML='<option value="">Select a pet…</option>'+pets.map(p=>`<option value="${p.id}">${esc(p.name)} (${esc(p.breed)})</option>`).join('');
+  }catch(e){console.error(e)}
+}
+function prefillEnq(){if(me){document.getElementById('enq-name').value=me.name;document.getElementById('enq-email').value=me.email}}
+function quickEnq(petId){nav('enquiry');setTimeout(()=>{document.getElementById('enq-pet').value=petId;prefillEnq()},80)}
+function quickApply(petId){nav('applications');setTimeout(()=>{const sel=document.getElementById('app-pet');if(sel)sel.value=petId},150)}
+async function submitEnquiry(){
+  const name=document.getElementById('enq-name').value.trim();
+  const email=document.getElementById('enq-email').value.trim();
+  const pet_id=parseInt(document.getElementById('enq-pet').value);
+  const message=document.getElementById('enq-msg').value.trim();
+  if(!name||!email||!pet_id||!message){toast('Missing fields','Fill all required fields',true);return}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){toast('Invalid email','Enter a valid email address',true);return}
+  try{
+    await api('POST','/api/enquiries',{user_name:name,email,phone:document.getElementById('enq-phone').value.trim(),pet_id,message});
+    toast('Enquiry sent! 📩','We\'ll respond within 24 hours. Thank you!');
+    ['enq-name','enq-email','enq-phone','enq-msg'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('enq-pet').value='';
+  }catch(e){toast('Error',e.message,true)}
+}
+
+// ── APPOINTMENTS ──
+async function loadApptPets(){
+  try{
+    const pets=await api('GET','/api/pets?status=available');
+    document.getElementById('ap-pet').innerHTML='<option value="">Select a pet…</option>'+pets.map(p=>`<option value="${p.id}">${esc(p.name)} (${esc(p.breed)})</option>`).join('');
+    const d=document.getElementById('ap-date');if(d)d.min=new Date().toISOString().split('T')[0];
+    if(me){document.getElementById('ap-name').value=me.name;document.getElementById('ap-email').value=me.email}
+  }catch(e){console.error(e)}
+}
+function quickAp(petId){nav('appointments');setTimeout(()=>{document.getElementById('ap-pet').value=petId},80)}
+async function submitAppt(){
+  const name=document.getElementById('ap-name').value.trim();
+  const email=document.getElementById('ap-email').value.trim();
+  const pet_id=parseInt(document.getElementById('ap-pet').value);
+  const visit_date=document.getElementById('ap-date').value;
+  if(!name||!email||!pet_id||!visit_date){toast('Missing fields','Fill all required fields',true);return}
+  if(new Date(visit_date)<new Date(new Date().toDateString())){toast('Invalid date','Please select a future date',true);return}
+  try{
+    await api('POST','/api/appointments',{visitor_name:name,email,phone:document.getElementById('ap-phone').value.trim(),pet_id,visit_date,visit_time:document.getElementById('ap-time').value,notes:document.getElementById('ap-notes').value.trim()});
+    toast('Visit booked! 📅','We\'ll confirm your appointment soon');
+    loadUserAppts();
+  }catch(e){toast('Error',e.message,true)}
+}
+async function loadUserAppts(){
+  if(!me)return;
+  try{
+    const appts=await api('GET','/api/appointments/mine');
+    const el=document.getElementById('user-appts');
+    if(!appts.length){el.innerHTML='<div class="empty"><div class="eico">📅</div><h3>No appointments yet</h3></div>';return}
+    el.innerHTML=appts.map(a=>`<div class="appt-c"><div class="appt-ico">${EM[a.species]||'🐾'}</div><div style="flex:1"><div style="font-weight:600;font-size:.93rem;margin-bottom:.2rem">${esc(a.pet_name||'Unknown')}</div><div style="font-size:.8rem;color:var(--ink-mid)">${fd(a.visit_date)} · ${esc(a.visit_time)}</div></div><span class="chip chip-${a.status}">${a.status}</span></div>`).join('');
+  }catch(e){console.error(e)}
+}
+
+// ── BLOG ──
+function blogCard(p){
+  const bgs={Health:'#F2DDD3','Care Tips':'#C4D9C5',Nutrition:'#C4D9C5',Training:'#DBEAFE',Adoption:'#FEF3C7'};
+  return`<div class="blog-card" onclick="openBlogDetail(${p.id})"><div class="blog-img" style="background:${bgs[p.category]||'#EDF4EE'}">${esc(p.emoji||'🐾')}</div><div class="blog-body"><span class="blog-cat">${esc(p.category)}</span><h3>${esc(p.title)}</h3><p>${esc(p.summary)}</p><div class="blog-meta"><span>By ${esc(p.author)}</span><span>${fd(p.created_at)}</span></div></div></div>`;
+}
+let blogCache=[];
+async function loadBlog(){
+  try{blogCache=await api('GET','/api/blog');document.getElementById('blog-grid').innerHTML=blogCache.map(blogCard).join('')||'<div class="empty"><div class="eico">📰</div><h3>No articles yet</h3></div>'}catch(e){console.error(e)}
+}
+async function openBlogDetail(id){
+  let post=blogCache.find(p=>p.id===id);
+  if(!post){try{post=await api('GET','/api/blog/'+id)}catch(e){toast('Error','Could not load article',true);return}}
+  if(!post){toast('Error','Article not found',true);return}
+  const bgs={Health:'#F2DDD3','Care Tips':'#C4D9C5',Nutrition:'#C4D9C5',Training:'#DBEAFE',Adoption:'#FEF3C7'};
+  document.getElementById('bdm-banner').style.background=bgs[post.category]||'#EDF4EE';
+  document.getElementById('bdm-emoji').textContent=post.emoji||'🐾';
+  document.getElementById('bdm-cat').textContent=post.category||'';
+  document.getElementById('bdm-title').textContent=post.title;
+  document.getElementById('bdm-meta').textContent=`By ${post.author||'PawsHome Team'} · ${fd(post.created_at)}`;
+  const bodyText=post.content&&post.content.trim()?post.content:post.summary;
+  document.getElementById('bdm-content').textContent=bodyText;
+  document.getElementById('blogDetailModal').classList.add('open');
+}
+
+// ── SURRENDER ──
+async function submitSurrender(){
+  const owner_name=document.getElementById('sur-oname').value.trim();
+  const owner_email=document.getElementById('sur-oemail').value.trim();
+  const pet_name=document.getElementById('sur-pname').value.trim();
+  const species=document.getElementById('sur-species').value;
+  const reason=document.getElementById('sur-reason').value.trim()||document.getElementById('sur-rsel').value;
+  if(!owner_name||!owner_email||!pet_name||!species||!reason){toast('Missing fields','Fill all required fields',true);return}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(owner_email)){toast('Invalid email','Enter a valid email address',true);return}
+  const f=new FormData();
+  f.append('owner_name',owner_name);f.append('owner_email',owner_email);
+  f.append('owner_phone',document.getElementById('sur-ophone').value.trim());
+  f.append('pet_name',pet_name);f.append('species',species);
+  f.append('breed',document.getElementById('sur-breed').value.trim());
+  f.append('age',document.getElementById('sur-age').value||0);
+  f.append('gender',document.getElementById('sur-gender').value);
+  f.append('vaccinated',document.getElementById('sur-vacc').value);
+  f.append('reason',reason);f.append('health_info',document.getElementById('sur-health').value.trim());
+  const img=document.getElementById('sur-img').files?.[0];if(img)f.append('image',img);
+  try{
+    const r=await fetch(API+'/api/surrender',{method:'POST',headers:{'X-Auth-Token':token||''},body:f});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(d.error||'Submission failed');
+    toast('Submitted! 🏠','We\'ll review your submission within 48 hours. Thank you for caring.');
+    ['sur-oname','sur-oemail','sur-ophone','sur-pname','sur-breed','sur-age','sur-reason','sur-health'].forEach(i=>{const el=document.getElementById(i);if(el)el.value=''});
+    document.getElementById('sur-img').value='';document.getElementById('sur-rsel').value='';
+    document.getElementById('sur-img-prev').style.display='none';
+  }catch(e){toast('Error',e.message,true)}
+}
+
+// ── PROFILE ──
+function renderProfile(){
+  document.getElementById('p-av').textContent=me.name.charAt(0).toUpperCase();
+  document.getElementById('p-name').textContent=me.name;
+  document.getElementById('p-email').textContent=me.email;
+  loadFavs();
+}
+async function loadFavs(){
+  try{
+    const d=await api('GET','/api/auth/me');
+    const favIds=d.favorites||[];
+    localStorage.setItem('ph_favs_'+me.id,JSON.stringify(favIds));
+    const el=document.getElementById('fav-grid'),em=document.getElementById('fav-empty');
+    if(!favIds.length){el.innerHTML='';em.style.display='block';return}
+    const pets=await Promise.all(favIds.map(id=>api('GET','/api/pets/'+id).catch(()=>null)));
+    const valid=pets.filter(Boolean);
+    el.innerHTML=valid.map(p=>petCard(p)).join('');em.style.display=valid.length?'none':'block';
+  }catch{document.getElementById('fav-empty').style.display='block'}
+}
+async function profileTab(name,btn){
+  document.querySelectorAll('.ptab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  ['favs','enq','ap','sur'].forEach(t=>{const el=document.getElementById('ptab-'+t);if(el)el.style.display='none'});
+  document.getElementById('ptab-'+name).style.display='block';
+  if(name==='favs')loadFavs();
+  else if(name==='enq'){try{const d=await api('GET','/api/enquiries/mine');renderUT(d,'ptab-enq',['Date','Pet','Status'],e=>`<td>${fd(e.created_at)}</td><td>${esc(e.pet_name||'—')}</td><td><span class="chip chip-${e.status}">${e.status}</span></td>`)}catch(e){console.error(e)}}
+  else if(name==='ap'){try{const d=await api('GET','/api/appointments/mine');renderUT(d,'ptab-ap',['Date','Pet','Time','Status'],a=>`<td>${fd(a.visit_date)}</td><td>${esc(a.pet_name||'—')}</td><td>${esc(a.visit_time)}</td><td><span class="chip chip-${a.status}">${a.status}</span></td>`)}catch(e){console.error(e)}}
+  else if(name==='sur'){try{const d=await api('GET','/api/surrender/mine');renderUT(d,'ptab-sur',['Pet','Species','Date','Status'],s=>`<td><strong>${esc(s.pet_name)}</strong></td><td>${esc(s.species)}</td><td>${fd(s.created_at)}</td><td><span class="chip chip-${s.status}">${s.status.replace('_',' ')}</span></td>`)}catch(e){console.error(e)}}
+}
+function renderUT(items,cid,headers,rowFn){
+  const el=document.getElementById(cid);
+  if(!items.length){el.innerHTML='<div class="empty"><div class="eico">📋</div><h3>Nothing here yet</h3></div>';return}
+  el.innerHTML=`<div class="tc"><table><thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${items.map(i=>`<tr>${rowFn(i)}</tr>`).join('')}</tbody></table></div>`;
+}
+
+// ── ADMIN TABS ──
+function adminTab(name,btn){
+  document.querySelectorAll('.aside-link').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  document.querySelectorAll('.admin-panel').forEach(p=>p.classList.remove('active'));
+  const panel=document.getElementById('ap-'+name);
+  if(panel)panel.classList.add('active');
+  ({
+    dashboard:loadDashboard,
+    pets:loadAdminPets,
+    surrenders:loadAdminSurr,
+    enquiries:loadAdminEnq,
+    appointments:loadAdminAppts,
+    blog:loadAdminBlog,
+    'admin-apps':loadAdminApps,
+    'admin-lf':loadAdminLF,
+    'admin-stories':loadAdminStories,
+  })[name]?.();
+}
+
+// ── DASHBOARD ──
+let dcharts={};
+async function loadDashboard(){
+  try{
+    const s=await api('GET','/api/stats');
+    document.getElementById('d-avail').textContent=s.available_pets;
+    document.getElementById('d-adopt').textContent=s.adopted_pets;
+    document.getElementById('d-enq').textContent=s.total_enquiries;
+    document.getElementById('d-enq-p').textContent=`${s.pending_enquiries} pending review`;
+    document.getElementById('d-ap').textContent=s.total_appointments;
+    document.getElementById('d-ap-p').textContent=`${s.pending_appointments} pending`;
+    document.getElementById('d-users').textContent=s.total_users;
+    document.getElementById('d-blog').textContent=s.total_blog_posts;
+    document.getElementById('d-sur').textContent=s.surrender_submissions;
+    document.getElementById('d-sur-p').textContent=`${s.pending_surrenders} under review`;
+    document.getElementById('d-apps').textContent=s.total_applications;
+    document.getElementById('d-apps-p').textContent=`${s.pending_applications} active`;
+    document.getElementById('d-lf').textContent=s.lost_found_open;
+    document.getElementById('d-lf-p').textContent=`${s.lost_reports} lost · ${s.found_reports} found`;
+    document.getElementById('d-stories').textContent=s.success_stories;
+    document.getElementById('d-stories-p').textContent=`${s.stories_pending} awaiting review`;
+    renderDashPipeline(s.application_pipeline||{});
+    const dot=(id,v)=>{const el=document.getElementById(id);if(el){el.style.display=v>0?'inline':'none';el.textContent=v}};
+    dot('enq-dot',s.pending_enquiries);dot('ap-dot',s.pending_appointments);dot('surr-dot',s.pending_surrenders);
+    dot('apps-dot',s.pending_applications||0);dot('stories-dot',s.stories_pending||0);
+    renderCharts(s);
+  }catch(e){console.error(e)}
+}
+function renderDashPipeline(pipeline){
+  const el=document.getElementById('dash-pipeline');
+  if(!el)return;
+  const steps=[
+    {key:'submitted',icon:'📋',label:'Submitted'},
+    {key:'under_review',icon:'🔍',label:'Under Review'},
+    {key:'interview_scheduled',icon:'📞',label:'Interview'},
+    {key:'approved',icon:'✅',label:'Approved'},
+  ];
+  el.innerHTML=steps.map(s=>{
+    const count=pipeline[s.key]||0;
+    return `<div class="pip-step${count>0?' done':''}">
+      <div class="pip-circle">${s.icon}</div>
+      <div class="pip-label">${s.label}</div>
+      <div style="font-family:var(--font-d);font-size:1.1rem;font-weight:700;margin-top:.2rem;color:${count>0?'var(--sage)':'var(--ink-soft)'}">${count}</div>
+    </div>`;
+  }).join('');
+}
+function renderCharts(s){
+  const destroy=id=>{if(dcharts[id]){dcharts[id].destroy();delete dcharts[id]}};
+  const ff='DM Sans',ax={color:'#8E9990',font:{family:ff,size:11}};
+  // Status donut
+  destroy('status');
+  const sc=document.getElementById('c-status');
+  if(sc){
+    const data=[s.available_pets,s.adopted_pets,s.pending_pets||0],labels=['Available','Adopted','Pending'],colors=['#4E8B62','#C8742A','#3B7EC8'];
+    dcharts.status=new Chart(sc,{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:0,hoverOffset:6}]},options:{responsive:true,cutout:'68%',plugins:{legend:{display:false}}}});
+    const leg=document.getElementById('status-legend');
+    if(leg)leg.innerHTML=labels.map((l,i)=>`<div class="cl-item"><div class="cl-dot" style="background:${colors[i]}"></div><span class="cl-lbl">${l}</span><span class="cl-val">${data[i]}</span></div>`).join('');
+  }
+  // Species bar
+  destroy('species');
+  const spc=document.getElementById('c-species');
+  if(spc){
+    const sb=s.species_breakdown||{};
+    dcharts.species=new Chart(spc,{type:'bar',data:{labels:Object.keys(sb),datasets:[{label:'Count',data:Object.values(sb),backgroundColor:['#4E8B62','#C8742A','#3B7EC8','#C4616E','#7AB08A'],borderRadius:6,borderSkipped:false}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1,...ax},grid:{color:'#E2DDD6'}},x:{ticks:ax,grid:{display:false}}}}});
+  }
+  // Trends line
+  destroy('trends');
+  const tc=document.getElementById('c-trends');
+  if(tc){
+    dcharts.trends=new Chart(tc,{type:'line',data:{labels:['Dec','Jan','Feb','Mar','Apr','May'],datasets:[{label:'Enquiries',data:[4,7,5,9,6,8],borderColor:'#C8742A',backgroundColor:'rgba(200,116,42,.1)',tension:.45,fill:true,pointBackgroundColor:'#C8742A',pointRadius:4,pointHoverRadius:6},{label:'Adoptions',data:[1,2,3,2,4,3],borderColor:'#4E8B62',backgroundColor:'rgba(78,139,98,.1)',tension:.45,fill:true,pointBackgroundColor:'#4E8B62',pointRadius:4,pointHoverRadius:6}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{family:ff,size:11},usePointStyle:true,padding:14}}},scales:{y:{beginAtZero:true,ticks:ax,grid:{color:'#E2DDD6'}},x:{ticks:ax,grid:{display:false}}}}});
+  }
+}
+
+// ── ADMIN PETS ──
+let adminPetsCache=[];
+async function loadAdminPets(){try{adminPetsCache=await api('GET','/api/pets');renderAdminPets(adminPetsCache)}catch(e){console.error(e)}}
+function renderAdminPets(pets){
+  const tb=document.getElementById('admin-pets-tb');if(!tb)return;
+  tb.innerHTML=pets.map(p=>`<tr>
+    <td>${p.image_url?`<div class="td-img"><img src="${esc(p.image_url)}" alt=""></div>`:`<div class="td-img">${EM[p.species]||'🐾'}</div>`}</td>
+    <td><div class="td-name">${esc(p.name)}</div><div class="td-sub">ID #${p.id}</div></td>
+    <td>${esc(p.species)} / ${esc(p.breed)}</td><td>${al(p.age)}</td><td>${p.gender}</td>
+    <td>${p.vaccinated?'<span style="color:var(--sage);font-weight:600">✓ Yes</span>':'<span style="color:var(--blush)">✗ No</span>'}</td>
+    <td><span class="chip chip-${p.status}">${p.status}</span></td>
+    <td><div class="td-acts">
+      <button class="btn btn-ghost btn-sm" onclick="openPetModal(${p.id})">Edit</button>
+      <button class="btn btn-sm" style="background:#fce8ea;color:var(--blush);border:1px solid #f4c4ca" onclick="delPet(${p.id})">Delete</button>
+    </div></td>
+  </tr>`).join('');
+}
+function toggleAdopterSec(){const s=document.getElementById('pfm-status')?.value;const sec=document.getElementById('adopter-sec');if(sec)sec.style.display=s==='adopted'?'block':'none'}
+function openPetModal(petId){
+  document.getElementById('pfm-title').textContent=petId?'Edit Pet':'Add New Pet';
+  document.getElementById('pfm-id').value=petId||'';
+  document.getElementById('pfm-img-prev').style.display='none';
+  document.getElementById('pfm-img').value='';
+  document.getElementById('pfm-cur-img').innerHTML='';
+  ['pfm-name','pfm-breed','pfm-age','pfm-color','pfm-weight','pfm-desc','pfm-health','pfm-adopter','pfm-adopter-msg','pfm-adopt-date'].forEach(i=>{const el=document.getElementById(i);if(el)el.value=''});
+  if(petId){
+    const p=adminPetsCache.find(x=>x.id===petId);
+    if(p){
+      document.getElementById('pfm-name').value=p.name;document.getElementById('pfm-species').value=p.species;document.getElementById('pfm-breed').value=p.breed;document.getElementById('pfm-age').value=p.age;document.getElementById('pfm-gender').value=p.gender;document.getElementById('pfm-status').value=p.status;document.getElementById('pfm-vacc').value=String(p.vaccinated);document.getElementById('pfm-color').value=p.color||'';document.getElementById('pfm-weight').value=p.weight||'';document.getElementById('pfm-desc').value=p.description;document.getElementById('pfm-health').value=p.health_notes||'';document.getElementById('pfm-adopter').value=p.adopter_name||'';document.getElementById('pfm-adopter-msg').value=p.adopter_message||'';document.getElementById('pfm-adopt-date').value=p.adopted_date||'';
+      if(p.image_url){
+        const prev=document.getElementById('pfm-img-prev');
+        if(prev){prev.src=imgUrl(p.image_url);prev.style.display='block';}
+        document.getElementById('pfm-cur-img').innerHTML=`<span style="color:var(--sage);font-weight:600">✓ Current photo loaded</span> — select a new file above to replace it`;
+      }
+      toggleAdopterSec();
+    }
+  }else{document.getElementById('pfm-status').value='available';const sec=document.getElementById('adopter-sec');if(sec)sec.style.display='none'}
+  document.getElementById('petFormModal').classList.add('open');
+}
+async function savePet(){
+  const id=document.getElementById('pfm-id').value;
+  const name=document.getElementById('pfm-name').value.trim();
+  const breed=document.getElementById('pfm-breed').value.trim();
+  const desc=document.getElementById('pfm-desc').value.trim();
+  if(!name||!breed||!desc){toast('Missing fields','Fill all required fields',true);return}
+  const f=new FormData();
+  f.append('name',name);f.append('species',document.getElementById('pfm-species').value);f.append('breed',breed);f.append('age',document.getElementById('pfm-age').value||0);f.append('gender',document.getElementById('pfm-gender').value);f.append('status',document.getElementById('pfm-status').value);f.append('vaccinated',document.getElementById('pfm-vacc').value);f.append('color',document.getElementById('pfm-color').value.trim());f.append('weight',document.getElementById('pfm-weight').value.trim());f.append('description',desc);f.append('health_notes',document.getElementById('pfm-health').value.trim());f.append('adopter_name',document.getElementById('pfm-adopter').value.trim());f.append('adopter_message',document.getElementById('pfm-adopter-msg').value.trim());f.append('adopted_date',document.getElementById('pfm-adopt-date').value);
+  const img=document.getElementById('pfm-img').files?.[0];if(img)f.append('image',img);
+  // PHP never parses $_FILES on a real PUT request, so we always POST and
+  // tell the server which "real" method to use via _method — this is what
+  // lets image uploads work when editing an existing pet.
+  if(id){f.append('_method','PUT');f.append('_id',id);}
+  try{
+    const r=await fetch(id?`${API}/api/pets/${id}`:`${API}/api/pets`,{method:'POST',headers:{'X-Auth-Token':token||''},body:f});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(d.error||'Save failed');
+    document.getElementById('petFormModal').classList.remove('open');
+    toast(id?'Updated!':'Added! 🐾',`${name} has been ${id?'updated':'added'}`);
+    loadAdminPets();loadDashboard();
+  }catch(e){toast('Error',e.message,true)}
+}
+async function delPet(id){
+  if(!confirm('Permanently delete this pet listing?'))return;
+  try{await api('DELETE','/api/pets/'+id);toast('Deleted','Pet removed');loadAdminPets();loadDashboard()}catch(e){toast('Error',e.message,true)}
+}
+
+// ── ADMIN SURRENDERS ──
+async function loadAdminSurr(){
+  try{
+    const items=await api('GET','/api/surrender');
+    const tb=document.getElementById('admin-surr-tb');if(!tb)return;
+    tb.innerHTML=items.map(s=>`<tr>
+      <td>${s.image_url?`<div class="td-img"><img src="${esc(s.image_url)}" alt=""></div>`:`<div class="td-img">${EM[s.species]||'🐾'}</div>`}</td>
+      <td><div class="td-name">${esc(s.pet_name)}</div><div class="td-sub">${esc(s.breed||'—')}, ${al(s.age)}</div></td>
+      <td><div class="td-name">${esc(s.owner_name)}</div><div class="td-sub">${esc(s.owner_email)}</div></td>
+      <td>${esc(s.species)}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.8rem">${esc(s.reason||'—')}</td>
+      <td>${fd(s.created_at)}</td>
+      <td><span class="chip chip-${s.status}">${s.status.replace('_',' ')}</span></td>
+      <td><div class="td-acts">
+        <button class="btn btn-ghost btn-sm" onclick="viewSurr(${s.id})">Review</button>
+        ${s.status==='under_review'?`<button class="btn btn-sm" style="background:var(--sage-pale);color:var(--sage);border:1px solid #b8d9be" onclick="updSurr(${s.id},'accepted')">Accept</button><button class="btn btn-sm" style="background:#fce8ea;color:var(--blush);border:1px solid #f4c4ca" onclick="updSurr(${s.id},'declined')">Decline</button>`:''}
+      </div></td>
+    </tr>`).join('');
+  }catch(e){console.error(e)}
+}
+async function viewSurr(id){
+  try{
+    const items=await api('GET','/api/surrender');const s=items.find(x=>x.id===id);if(!s)return;
+    document.getElementById('surr-content').innerHTML=`
+      ${s.image_url?`<img src="${esc(s.image_url)}" style="width:100%;height:200px;object-fit:cover;border-radius:var(--r-md);margin-bottom:1.2rem">`:`<div style="font-size:5rem;text-align:center;margin-bottom:1rem">${EM[s.species]||'🐾'}</div>`}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.85rem;margin-bottom:1rem">
+        ${[['Pet Name',s.pet_name],['Species/Breed',`${s.species}${s.breed?' / '+s.breed:''}`],['Age',al(s.age)],['Gender',s.gender],['Vaccinated',s.vaccinated?'Yes ✓':'No'],['Status',`<span class="chip chip-${s.status}">${s.status.replace('_',' ')}</span>`]].map(([l,v])=>`<div><div style="font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-soft);font-weight:700;margin-bottom:3px">${l}</div><div style="font-size:.9rem;font-weight:500">${v}</div></div>`).join('')}
+      </div>
+      <div style="margin-bottom:.85rem"><div style="font-size:.68rem;text-transform:uppercase;color:var(--ink-soft);font-weight:700;margin-bottom:4px">Owner</div><div style="font-size:.88rem">${esc(s.owner_name)} · ${esc(s.owner_email)}${s.owner_phone?' · '+esc(s.owner_phone):''}</div></div>
+      <div style="margin-bottom:.85rem"><div style="font-size:.68rem;text-transform:uppercase;color:var(--ink-soft);font-weight:700;margin-bottom:4px">Reason</div><div style="font-size:.88rem;color:var(--ink-mid);line-height:1.65">${esc(s.reason||'—')}</div></div>
+      ${s.health_info?`<div><div style="font-size:.68rem;text-transform:uppercase;color:var(--ink-soft);font-weight:700;margin-bottom:4px">Health Info</div><div style="font-size:.88rem;color:var(--ink-mid);line-height:1.65">${esc(s.health_info)}</div></div>`:''}`
+    document.getElementById('surr-acts').innerHTML=s.status==='under_review'
+      ?`<button class="btn btn-forest" onclick="updSurr(${s.id},'accepted');document.getElementById('surrModal').classList.remove('open')">✓ Accept into Shelter</button><button class="btn btn-ghost" style="color:var(--blush);border-color:#f4c4ca" onclick="updSurr(${s.id},'declined');document.getElementById('surrModal').classList.remove('open')">✗ Decline</button>`
+      :`<button class="btn btn-ghost" style="grid-column:1/-1;justify-content:center" onclick="document.getElementById('surrModal').classList.remove('open')">Close</button>`;
+    document.getElementById('surrModal').classList.add('open');
+  }catch(e){toast('Error',e.message,true)}
+}
+async function updSurr(id,status){try{await api('PUT','/api/surrender/'+id,{status});toast('Updated',`Submission ${status}`);loadAdminSurr();loadDashboard()}catch(e){toast('Error',e.message,true)}}
+
+// ── ADMIN ENQUIRIES ──
+async function loadAdminEnq(){
+  try{
+    const items=await api('GET','/api/enquiries');
+    const tb=document.getElementById('admin-enq-tb');if(!tb)return;
+    tb.innerHTML=items.map(e=>`<tr>
+      <td>${fd(e.created_at)}</td>
+      <td><div class="td-name">${esc(e.user_name)}</div></td>
+      <td>${esc(e.email)}</td><td>${esc(e.phone||'—')}</td><td>${esc(e.pet_name||'—')}</td>
+      <td><span class="chip chip-${e.status}">${e.status}</span></td>
+      <td><div class="td-acts">
+        ${e.status==='pending'?`<button class="btn btn-sage btn-sm" onclick="updEnq(${e.id},'responded')">Mark Responded</button>`:''}
+        <button class="btn btn-sm" style="background:#fce8ea;color:var(--blush);border:1px solid #f4c4ca" onclick="delEnq(${e.id})">Delete</button>
+      </div></td>
+    </tr>`).join('');
+  }catch(e){console.error(e)}
+}
+async function updEnq(id,status){try{await api('PUT','/api/enquiries/'+id,{status});toast('Updated','Enquiry marked responded');loadAdminEnq();loadDashboard()}catch(e){toast('Error',e.message,true)}}
+async function delEnq(id){if(!confirm('Delete this enquiry?'))return;try{await api('DELETE','/api/enquiries/'+id);toast('Deleted','Enquiry removed');loadAdminEnq()}catch(e){console.error(e)}}
+
+// ── ADMIN APPOINTMENTS ──
+async function loadAdminAppts(){
+  try{
+    const items=await api('GET','/api/appointments');
+    const tb=document.getElementById('admin-ap-tb');if(!tb)return;
+    tb.innerHTML=items.map(a=>`<tr>
+      <td>${fd(a.visit_date)}</td>
+      <td><div class="td-name">${esc(a.visitor_name)}</div><div class="td-sub">${esc(a.email)}</div></td>
+      <td>${esc(a.email)}</td><td>${esc(a.pet_name||'—')}</td><td>${esc(a.visit_time)}</td>
+      <td><span class="chip chip-${a.status}">${a.status}</span></td>
+      <td><div class="td-acts">
+        ${a.status==='pending'?`<button class="btn btn-sm" style="background:var(--sage-pale);color:var(--sage);border:1px solid #b8d9be" onclick="updAp(${a.id},'approved')">Approve</button><button class="btn btn-sm" style="background:#fce8ea;color:var(--blush);border:1px solid #f4c4ca" onclick="updAp(${a.id},'rejected')">Reject</button>`:''}
+      </div></td>
+    </tr>`).join('');
+  }catch(e){console.error(e)}
+}
+async function updAp(id,status){try{await api('PUT','/api/appointments/'+id,{status});toast('Updated',`Appointment ${status}`);loadAdminAppts();loadDashboard()}catch(e){toast('Error',e.message,true)}}
+
+// ── ADMIN BLOG ──
+async function loadAdminBlog(){
+  try{
+    const posts=await api('GET','/api/blog');
+    const tb=document.getElementById('admin-blog-tb');if(!tb)return;
+    tb.innerHTML=posts.map(p=>`<tr><td><strong>${esc(p.emoji)} ${esc(p.title)}</strong></td><td><span class="blog-cat" style="font-size:.7rem">${esc(p.category)}</span></td><td>${esc(p.author)}</td><td>${fd(p.created_at)}</td><td><button class="btn btn-sm" style="background:#fce8ea;color:var(--blush);border:1px solid #f4c4ca" onclick="delBlog(${p.id})">Delete</button></td></tr>`).join('');
+  }catch(e){console.error(e)}
+}
+function openBlogModal(){['bfm-title','bfm-summary','bfm-content'].forEach(i=>document.getElementById(i).value='');document.getElementById('blogFormModal').classList.add('open')}
+async function saveBlog(){
+  const title=document.getElementById('bfm-title').value.trim();const summary=document.getElementById('bfm-summary').value.trim();
+  if(!title||!summary){toast('Missing fields','Title and summary required',true);return}
+  try{await api('POST','/api/blog',{title,category:document.getElementById('bfm-cat').value,summary,content:document.getElementById('bfm-content').value.trim(),emoji:document.getElementById('bfm-emoji').value});document.getElementById('blogFormModal').classList.remove('open');toast('Published! 📰',`"${title}" is now live`);loadAdminBlog()}catch(e){toast('Error',e.message,true)}
+}
+async function delBlog(id){if(!confirm('Delete this article?'))return;try{await api('DELETE','/api/blog/'+id);toast('Deleted','Article removed');loadAdminBlog()}catch(e){console.error(e)}}
+
+
+// ══════════════════════════════════════════════
+// FEATURE 1: ADOPTION APPLICATION WORKFLOW
+// ══════════════════════════════════════════════
+
+const APP_STEPS = [
+  {key:'submitted',          icon:'📋', label:'Submitted'},
+  {key:'under_review',       icon:'🔍', label:'Under Review'},
+  {key:'interview_scheduled',icon:'📞', label:'Interview'},
+  {key:'approved',           icon:'✅', label:'Approved'},
+  {key:'rejected',           icon:'❌', label:'Rejected'},
+];
+
+function appPipelineHTML(status) {
+  const stepsToShow = status === 'rejected'
+    ? APP_STEPS
+    : APP_STEPS.filter(s => s.key !== 'rejected');
+  const curIdx = stepsToShow.findIndex(s => s.key === status);
+  return `<div class="pipeline">` +
+    stepsToShow.map((s, i) => {
+      let cls = i < curIdx ? 'done' : i === curIdx ? (status==='rejected'?'rejected':'active') : '';
+      return `<div class="pip-step ${cls}">
+        <div class="pip-circle">${s.icon}</div>
+        <div class="pip-label">${s.label}</div>
+      </div>`;
+    }).join('') + `</div>`;
+}
+
+async function loadAppPets() {
+  try {
+    const pets = await api('GET','/api/pets?status=available');
+    const sel = document.getElementById('app-pet');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">Select a pet…</option>' +
+      pets.map(p=>`<option value="${p.id}">${esc(p.name)} (${esc(p.breed)})</option>`).join('');
+    if (me) {
+      const ni = document.getElementById('app-name');
+      const ei = document.getElementById('app-email');
+      if (ni) ni.value = me.name;
+      if (ei) ei.value = me.email;
+    }
+    const d = document.getElementById('ap-date');
+    if (d) d.min = new Date().toISOString().split('T')[0];
+  } catch(e) { console.error(e); }
+}
+
+async function submitApplication() {
+  if (!me) { toast('Sign in required','Please sign in to submit an application',true); nav('login'); return; }
+  const petId   = parseInt(document.getElementById('app-pet').value);
+  const name    = document.getElementById('app-name').value.trim();
+  const email   = document.getElementById('app-email').value.trim();
+  const reason  = document.getElementById('app-reason').value.trim();
+  const living  = document.getElementById('app-living').value;
+  if (!petId||!name||!email||!reason) { toast('Missing fields','Fill all required fields',true); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { toast('Invalid email','Enter a valid email address',true); return; }
+  try {
+    await api('POST','/api/applications',{
+      pet_id: petId, full_name: name, email,
+      phone: document.getElementById('app-phone').value.trim(),
+      address: document.getElementById('app-address').value.trim(),
+      reason, living_situation: living,
+      has_children: document.getElementById('app-children').value,
+      has_other_pets: document.getElementById('app-otherpets').value,
+      experience: document.getElementById('app-exp').value.trim(),
+    });
+    toast('Application submitted! 📋','We\'ll review your application within 48 hours.');
+    ['app-name','app-email','app-phone','app-address','app-reason','app-exp'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    document.getElementById('app-pet').value='';
+    loadUserApps();
+  } catch(e) { toast('Error',e.message,true); }
+}
+
+async function loadUserApps() {
+  if (!me) return;
+  const el = document.getElementById('user-applications');
+  if (!el) return;
+  try {
+    const apps = await api('GET','/api/applications?mine=1');
+    if (!apps.length) {
+      el.innerHTML = `<div class="empty"><div class="eico">📋</div><h3>No applications yet</h3><p>Fill out the form and click Submit Application to get started</p></div>`;
+      return;
+    }
+    const statusMsg = {
+      'submitted':           {icon:'⏳', msg:'Application received! Our team will begin reviewing it soon.', color:'var(--sky)'},
+      'under_review':        {icon:'🔍', msg:'Your application is currently being reviewed by our team.', color:'var(--amber)'},
+      'interview_scheduled': {icon:'📞', msg:'Great news — we\'d like to schedule a quick chat! Check your email.', color:'var(--sage)'},
+      'approved':            {icon:'🎉', msg:'Congratulations! Your adoption has been approved. We\'ll contact you shortly.', color:'var(--sage)'},
+      'rejected':            {icon:'💔', msg:'Unfortunately your application was not successful this time. You can apply for another pet.', color:'var(--blush)'},
+      'withdrawn':           {icon:'↩️', msg:'This application has been withdrawn.', color:'var(--ink-soft)'},
+    };
+    el.innerHTML = apps.map(a => {
+      const imgHtml = a.pet_image
+        ? `<img src="${imgUrl(a.pet_image)}" alt="">`
+        : `<span>${EM[a.pet_species]||'🐾'}</span>`;
+      const sm = statusMsg[a.status] || {icon:'📋', msg:'', color:'var(--ink-mid)'};
+      return `<div class="app-card" style="display:block;padding:1.4rem">
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem">
+          <div class="app-pet-img">${imgHtml}</div>
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:1rem">${esc(a.pet_name||'Unknown Pet')}</div>
+            <div style="font-size:.8rem;color:var(--ink-mid)">Applied ${fd(a.created_at)}</div>
+          </div>
+          <span class="chip chip-${a.status}">${a.status.replace(/_/g,' ')}</span>
+        </div>
+        ${appPipelineHTML(a.status)}
+        <div style="margin-top:.85rem;padding:.75rem 1rem;background:var(--bone-d);border-radius:var(--r-sm);border-left:3px solid ${sm.color};font-size:.82rem;line-height:1.55">
+          <strong style="color:${sm.color}">${sm.icon} Status Update</strong><br>
+          ${sm.msg}
+        </div>
+        ${a.interview_date?`<div style="margin-top:.6rem;padding:.6rem .9rem;background:var(--amber-pale);border-radius:var(--r-sm);font-size:.82rem;color:var(--amber);font-weight:600">📞 Interview scheduled: ${fd(a.interview_date)}</div>`:''}
+        ${a.admin_notes?`<div style="margin-top:.6rem;padding:.6rem .9rem;background:var(--sage-pale);border-radius:var(--r-sm);font-size:.8rem;color:var(--sage)"><strong>📝 Note from shelter:</strong> ${esc(a.admin_notes)}</div>`:''}
+      </div>`;
+    }).join('');
+  } catch(e) {
+    console.error('loadUserApps error:', e);
+    el.innerHTML = `<div class="empty"><div class="eico">📋</div><h3>Please sign in</h3><p>Sign in to view your applications</p></div>`;
+  }
+}
+
+// Admin: Applications
+async function loadAdminApps() {
+  try {
+    const apps = await api('GET','/api/applications');
+    adminAppsCache = apps;
+
+    // Pipeline summary cards — clickable to filter
+    const summary = document.getElementById('apps-pipeline-summary');
+    if (summary) {
+      const counts = {};
+      apps.forEach(a => counts[a.status] = (counts[a.status]||0)+1);
+      summary.innerHTML = APP_STEPS.map(s => `
+        <div class="stat" style="padding:1rem;cursor:pointer;border-top:3px solid ${{'submitted':'#4E8B62','under_review':'#3B7EC8','interview_scheduled':'#C9943A','approved':'#4E8B62','rejected':'#C4616E'}[s.key]||'#ccc'}"
+             onclick="filterAdminApps('${s.key}',null)">
+          <div style="font-size:1.5rem;margin-bottom:.4rem">${s.icon}</div>
+          <div style="font-family:var(--font-d);font-size:1.8rem;font-weight:700;line-height:1">${counts[s.key]||0}</div>
+          <div style="font-size:.7rem;color:var(--ink-mid);text-transform:uppercase;letter-spacing:.05em;margin-top:.3rem">${s.label}</div>
+        </div>`).join('');
+    }
+
+    renderAdminApps(apps);
+    const dot = document.getElementById('apps-dot');
+    const pending = apps.filter(a=>['submitted','under_review'].includes(a.status)).length;
+    if (dot) { dot.style.display = pending>0?'inline':'none'; dot.textContent = pending; }
+  } catch(e) {
+    console.error('loadAdminApps error:', e);
+    const tb = document.getElementById('admin-apps-tb');
+    if (tb) tb.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--blush)">⚠️ Could not load applications: ${e.message}. <button class="btn btn-sm btn-ghost" onclick="loadAdminApps()">Retry</button></td></tr>`;
+  }
+}
+
+let adminAppsCache = [];
+function renderAdminApps(apps) {
+  const tb = document.getElementById('admin-apps-tb');
+  if (!tb) return;
+  if (!apps.length) {
+    tb.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--ink-soft)">No applications found for this status</td></tr>`;
+    return;
+  }
+  tb.innerHTML = apps.map(a => {
+    const imgHtml = a.pet_image
+      ? `<img src="${imgUrl(a.pet_image)}" alt="" style="width:36px;height:36px;border-radius:var(--r-sm);object-fit:cover;vertical-align:middle;margin-right:.4rem">`
+      : `<span style="font-size:1.1rem;margin-right:.4rem">${EM[a.pet_species]||'🐾'}</span>`;
+    const nextAction = {
+      'submitted':           `<button class="btn btn-sm" style="background:var(--sage-pale);color:var(--sage);border:1px solid #b8d9be" onclick="updateApp(${a.id},'under_review')">→ Start Review</button>`,
+      'under_review':        `<button class="btn btn-sm" style="background:#e8f0fc;color:var(--sky);border:1px solid #b8d4f0" onclick="promptInterview(${a.id})">📞 Schedule Interview</button>`,
+      'interview_scheduled': `<button class="btn btn-forest btn-sm" onclick="updateApp(${a.id},'approved')">✅ Approve</button>`,
+    }[a.status] || '';
+    return `<tr>
+      <td><div style="font-size:.82rem">${fd(a.created_at)}</div></td>
+      <td><div class="td-name">${esc(a.full_name)}</div><div class="td-sub">${esc(a.email)}</div></td>
+      <td><div style="display:flex;align-items:center">${imgHtml}<div class="td-name">${esc(a.pet_name||'—')}</div></div></td>
+      <td style="font-size:.8rem;color:var(--ink-mid);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(a.living_situation||'—')}</td>
+      <td style="font-size:.82rem;text-align:center">${a.has_children?'👶 Yes':'No'} / ${a.has_other_pets?'🐾 Yes':'No'}</td>
+      <td><span class="chip chip-${a.status}">${a.status.replace(/_/g,' ')}</span>${a.interview_date?`<div style="font-size:.72rem;color:var(--amber);margin-top:3px">📞 ${fd(a.interview_date)}</div>`:''}</td>
+      <td><div class="td-acts">
+        <button class="btn btn-ghost btn-sm" onclick="openAppReview(${a.id})">👁 Review</button>
+        ${nextAction}
+        ${['submitted','under_review','interview_scheduled'].includes(a.status)?`<button class="btn btn-sm" style="background:#fce8ea;color:var(--blush);border:1px solid #f4c4ca" onclick="updateApp(${a.id},'rejected')">✗</button>`:''}
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function filterAdminApps(status, btn) {
+  // Update tab active state
+  document.querySelectorAll('#apps-filter-tabs .admin-tab-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const filtered = status === 'all' ? adminAppsCache : adminAppsCache.filter(a => a.status === status);
+  renderAdminApps(filtered);
+}
+
+async function openAppReview(id) {
+  const app = adminAppsCache.find(a=>a.id===id);
+  if (!app) return;
+  const info = [
+    ['Full Name', app.full_name], ['Email', app.email], ['Phone', app.phone||'—'],
+    ['Address', app.address||'—'], ['Living Situation', app.living_situation||'—'],
+    ['Has Children', app.has_children?'Yes':'No'], ['Has Other Pets', app.has_other_pets?'Yes':'No'],
+    ['Experience', app.experience||'None stated'],
+  ].map(([l,v])=>`<div><div style="font-size:.68rem;text-transform:uppercase;color:var(--ink-soft);font-weight:700;margin-bottom:2px">${l}</div><div style="font-size:.88rem">${esc(v)}</div></div>`).join('');
+
+  const content = `
+    <div style="background:var(--bone-d);border-radius:var(--r-md);padding:1rem;margin-bottom:1.2rem">
+      <div style="font-size:.8rem;font-weight:700;margin-bottom:.75rem">Pet: ${esc(app.pet_name||'—')} · ${app.pet_species||''}</div>
+      ${appPipelineHTML(app.status)}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem">${info}</div>
+    <div style="margin-bottom:1rem"><div style="font-size:.68rem;text-transform:uppercase;color:var(--ink-soft);font-weight:700;margin-bottom:4px">Reason for Adoption</div><div style="font-size:.88rem;color:var(--ink-mid);line-height:1.65">${esc(app.reason)}</div></div>
+    ${app.admin_notes?`<div style="background:var(--sage-pale);border-radius:var(--r-sm);padding:.75rem;font-size:.82rem;color:var(--sage);margin-bottom:.75rem"><strong>Admin Notes:</strong> ${esc(app.admin_notes)}</div>`:''}
+    <div class="fg2" style="margin-bottom:1rem"><label>Admin Notes</label><textarea id="app-review-notes" style="min-height:68px;padding:.64rem 1rem;border:1.5px solid var(--border);border-radius:var(--r-sm);font-family:var(--font-b);font-size:.88rem;width:100%;background:var(--bone);outline:none" placeholder="Add notes for the applicant…">${esc(app.admin_notes||'')}</textarea></div>
+  `;
+
+  // Reuse surrender modal
+  document.getElementById('surr-content').innerHTML = content;
+  const acts = document.getElementById('surr-acts');
+  acts.style.gridTemplateColumns = 'repeat(3,1fr)';
+  acts.innerHTML = `
+    <button class="btn btn-ghost btn-sm" onclick="saveAppNotes(${id})">💾 Save Notes</button>
+    ${app.status==='submitted'||app.status==='under_review'?`<button class="btn btn-sm" style="background:#e8f0fc;color:var(--sky);border:1px solid #b8d4f0" onclick="promptInterview(${id});document.getElementById('surrModal').classList.remove('open')">📞 Schedule Interview</button>`:''}
+    ${app.status==='interview_scheduled'?`<button class="btn btn-forest btn-sm" onclick="updateApp(${id},'approved');document.getElementById('surrModal').classList.remove('open')">✅ Approve</button>`:''}
+    ${['submitted','under_review','interview_scheduled'].includes(app.status)?`<button class="btn btn-sm" style="background:#fce8ea;color:var(--blush);border:1px solid #f4c4ca" onclick="updateApp(${id},'rejected');document.getElementById('surrModal').classList.remove('open')">✗ Reject</button>`:'<button class="btn btn-ghost btn-sm" onclick="document.getElementById(\'surrModal\').classList.remove(\'open\')">Close</button>'}
+  `;
+  document.getElementById('surrModal').classList.add('open');
+}
+
+async function saveAppNotes(id) {
+  const notes = document.getElementById('app-review-notes')?.value.trim()||'';
+  try { await api('PUT','/api/applications/'+id,{admin_notes:notes}); toast('Saved','Notes updated'); loadAdminApps(); } catch(e) { toast('Error',e.message,true); }
+}
+
+function promptInterview(id) {
+  const date = prompt('Enter interview date and time (YYYY-MM-DD HH:MM):');
+  if (!date) return;
+  updateApp(id,'interview_scheduled',{interview_date:date});
+}
+
+async function updateApp(id, status, extra={}) {
+  try {
+    await api('PUT','/api/applications/'+id, {status, ...extra});
+    toast('Updated',`Application ${status.replace(/_/g,' ')}`);
+    loadAdminApps(); loadDashboard();
+  } catch(e) { toast('Error',e.message,true); }
+}
+
+// ══════════════════════════════════════════════
+// FEATURE 2: LOST & FOUND
+// ══════════════════════════════════════════════
+
+let lfFilter = 'all';
+
+async function loadLF(type='all') {
+  lfFilter = type;
+  const params = type!=='all' ? `?type=${type}` : '';
+  const gr = document.getElementById('lf-grid');
+  const em = document.getElementById('lf-empty');
+  if (!gr) return;
+  gr.innerHTML = '<div class="spinner"></div>';
+  try {
+    const items = await api('GET','/api/lostfound'+params);
+    if (!items.length) { gr.innerHTML=''; if(em) em.style.display='block'; return; }
+    if (em) em.style.display='none';
+    gr.innerHTML = items.map(lfCard).join('');
+  } catch(e) { gr.innerHTML=''; }
+}
+
+function filterLF(type, btn) {
+  document.querySelectorAll('.lf-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  loadLF(type);
+}
+
+function lfCard(r) {
+  const EMSP = {Dog:'🐶',Cat:'🐱',Rabbit:'🐰',Bird:'🐦',Hamster:'🐹',Other:'🐾'};
+  const emoji = EMSP[r.species]||'🐾';
+  const imgHtml = r.image_url
+    ? `<img src="${imgUrl(r.image_url)}" alt="">`
+    : `<span style="position:relative;z-index:1">${emoji}</span>`;
+  const resolvedBadge = r.status==='resolved' ? `<span class="lf-resolved-badge">✓ Resolved</span>` : '';
+  const typeBadge = `<span class="lf-type-badge lf-type-${r.type}">${r.type==='lost'?'🔴 LOST':'🟢 FOUND'}</span>`;
+  return `<div class="lf-card${r.status==='resolved'?' lf-resolved':''}">
+    <div class="lf-img">${imgHtml}${typeBadge}${resolvedBadge}</div>
+    <div class="lf-body">
+      <div class="lf-title">${esc(r.pet_name||r.species+(r.breed?' – '+r.breed:''))}</div>
+      <div class="lf-area">📍 ${esc(r.area)} · ${fd(r.lost_found_date)}</div>
+      <p class="lf-desc">${esc(r.description)}</p>
+      <div class="lf-contact-box">
+        <strong>Contact${r.contact_name?' — '+esc(r.contact_name):''}</strong>
+        ${r.contact_phone?`📞 ${esc(r.contact_phone)}<br>`:''}
+        ${r.contact_email?`✉️ ${esc(r.contact_email)}`:''}
+      </div>
+    </div>
+  </div>`;
+}
+
+function openLFModal() {
+  if (!me) { toast('Sign in required','Please sign in to report a pet',true); nav('login'); return; }
+  const d = document.getElementById('lf-date');
+  if (d) d.value = new Date().toISOString().split('T')[0];
+  document.getElementById('lfModal').classList.add('open');
+}
+
+function setLFType(type) {
+  document.getElementById('lf-type').value = type;
+  ['lost','found'].forEach(t => {
+    const btn = document.getElementById('lf-type-'+t);
+    if (btn) { btn.classList.toggle('active', t===type); }
+  });
+}
+
+async function submitLFReport() {
+  const species = document.getElementById('lf-species').value;
+  const area    = document.getElementById('lf-area').value.trim();
+  const desc    = document.getElementById('lf-desc').value.trim();
+  if (!species||!area||!desc) { toast('Missing fields','Species, area and description required',true); return; }
+
+  const fd2 = new FormData();
+  fd2.append('type',          document.getElementById('lf-type').value);
+  fd2.append('pet_name',      document.getElementById('lf-pname').value.trim());
+  fd2.append('species',       species);
+  fd2.append('breed',         document.getElementById('lf-breed').value.trim());
+  fd2.append('color',         document.getElementById('lf-color').value.trim());
+  fd2.append('area',          area);
+  fd2.append('description',   desc);
+  fd2.append('contact_name',  document.getElementById('lf-cname').value.trim());
+  fd2.append('contact_phone', document.getElementById('lf-cphone').value.trim());
+  fd2.append('lost_found_date', document.getElementById('lf-date').value);
+  const img = document.getElementById('lf-img').files?.[0];
+  if (img) fd2.append('image', img);
+
+  try {
+    const r = await fetch(`${API}/api/lostfound`, {method:'POST', headers:{'X-Auth-Token':token||''}, body:fd2});
+    const d = await r.json().catch(()=>({}));
+    if (!r.ok) throw new Error(d.error||'Failed');
+    document.getElementById('lfModal').classList.remove('open');
+    toast('Report submitted!','Thank you for helping reunite pets with their families');
+    ['lf-pname','lf-breed','lf-color','lf-area','lf-desc','lf-cname','lf-cphone'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    document.getElementById('lf-species').value='';
+    document.getElementById('lf-img').value='';
+    document.getElementById('lf-img-prev').style.display='none';
+    loadLF(lfFilter);
+  } catch(e) { toast('Error',e.message,true); }
+}
+
+// Admin: Lost & Found
+async function loadAdminLF() {
+  try {
+    const items = await api('GET','/api/lostfound');
+    const tb = document.getElementById('admin-lf-tb');
+    if (!tb) return;
+    const EMSP = {Dog:'🐶',Cat:'🐱',Rabbit:'🐰',Bird:'🐦',Hamster:'🐹',Other:'🐾'};
+    tb.innerHTML = items.map(r => `<tr>
+      <td>${r.image_url?`<div class="td-img"><img src="${imgUrl(r.image_url)}" alt=""></div>`:`<div class="td-img">${EMSP[r.species]||'🐾'}</div>`}</td>
+      <td><span class="chip ${r.type==='lost'?'chip-rejected':'chip-available'}">${r.type}</span></td>
+      <td><div class="td-name">${esc(r.pet_name||r.species)}</div><div class="td-sub">${esc(r.breed||r.color||'—')}</div></td>
+      <td style="font-size:.8rem">${esc(r.area)}</td>
+      <td><div class="td-name">${esc(r.reporter_name||'Anonymous')}</div><div class="td-sub">${esc(r.contact_email||'—')}</div></td>
+      <td>${fd(r.lost_found_date)}</td>
+      <td><span class="chip ${r.status==='open'?'chip-pending':'chip-approved'}">${r.status}</span></td>
+      <td><div class="td-acts">
+        ${r.status==='open'?`<button class="btn btn-sage btn-sm" onclick="resolveLF(${r.id})">✓ Resolve</button>`:''}
+        <button class="btn btn-sm" style="background:#fce8ea;color:var(--blush);border:1px solid #f4c4ca" onclick="deleteLFAdmin(${r.id})">Delete</button>
+      </div></td>
+    </tr>`).join('');
+    const dot = document.getElementById('lf-dot');
+    const open = items.filter(r=>r.status==='open').length;
+    if (dot) { dot.style.display=open>0?'inline':'none'; dot.textContent=open; }
+  } catch(e) { console.error(e); }
+}
+
+async function resolveLF(id) {
+  try { await api('PUT','/api/lostfound/'+id,{status:'resolved'}); toast('Marked resolved','Report closed'); loadAdminLF(); } catch(e) { toast('Error',e.message,true); }
+}
+async function deleteLFAdmin(id) {
+  if (!confirm('Delete this report?')) return;
+  try { await api('DELETE','/api/lostfound/'+id); toast('Deleted','Report removed'); loadAdminLF(); } catch(e) { console.error(e); }
+}
+
+// ══════════════════════════════════════════════
+// FEATURE 3: SUCCESS STORIES
+// ══════════════════════════════════════════════
+
+async function loadStories() {
+  const gr = document.getElementById('stories-grid');
+  const em = document.getElementById('stories-empty');
+  if (!gr) return;
+  gr.innerHTML = '<div class="spinner"></div>';
+  try {
+    const items = await api('GET','/api/stories');
+    if (!items.length) { gr.innerHTML=''; if(em)em.style.display='block'; return; }
+    if(em) em.style.display='none';
+    gr.innerHTML = items.map(storyCard).join('');
+  } catch(e) { gr.innerHTML=''; }
+}
+
+function storyCard(s) {
+  const EMSP = {Dog:'🐶',Cat:'🐱',Rabbit:'🐰',Bird:'🐦',Hamster:'🐹'};
+  const emoji = EMSP[s.pet_species]||'❤️';
+  const imgHtml = s.image_url
+    ? `<img src="${imgUrl(s.image_url)}" alt="${esc(s.title)}">`
+    : '';
+  const featured = s.featured ? `<span class="story-featured">⭐ Featured</span>` : '';
+  const excerpt = s.story.length > 180 ? s.story.substring(0,180)+'…' : s.story;
+  return `<div class="story-card" onclick="openStoryDetail(${s.id})">
+    <div class="story-img">${imgHtml}<span style="position:relative;z-index:1;font-size:4rem${s.image_url?';display:none':''}">${emoji}</span>${featured}</div>
+    <div class="story-body">
+      <div class="story-pet-chip">${emoji} ${esc(s.pet_name)}${s.pet_species?' · '+esc(s.pet_species):''}</div>
+      <div class="story-title">${esc(s.title)}</div>
+      <p class="story-excerpt">${esc(excerpt)}</p>
+      <div class="story-meta">
+        <span>By ${esc(s.adopter_name||s.submitter_name||'Anonymous')}</span>
+        <span>${s.adopted_year||fd(s.created_at)}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+let storiesCache = [];
+async function openStoryDetail(id) {
+  if (!storiesCache.length) {
+    try { storiesCache = await api('GET','/api/stories'); } catch(e) { return; }
+  }
+  const s = storiesCache.find(x=>x.id===id);
+  if (!s) return;
+  const EMSP = {Dog:'🐶',Cat:'🐱',Rabbit:'🐰',Bird:'🐦',Hamster:'🐹'};
+  const emoji = EMSP[s.pet_species]||'❤️';
+  const im = document.getElementById('sfm-img');
+  const em = document.getElementById('sfm-emoji');
+  if (s.image_url) { im.src=imgUrl(s.image_url); im.style.display='block'; em.style.display='none'; }
+  else { em.textContent=emoji; em.style.display='block'; im.style.display='none'; }
+  document.getElementById('sfm-pet-chip').innerHTML = `${emoji} ${esc(s.pet_name)}${s.pet_species?' · '+esc(s.pet_species):''}`;
+  document.getElementById('sfm-title').textContent = s.title;
+  document.getElementById('sfm-meta').textContent = `By ${s.adopter_name||s.submitter_name||'Anonymous'} · ${s.adopted_year||fd(s.created_at)}`;
+  document.getElementById('sfm-text').textContent = s.story;
+  document.getElementById('storyDetailModal').classList.add('open');
+}
+
+function openStoryModal() {
+  if (!me) { toast('Sign in required','Please sign in to share your story',true); nav('login'); return; }
+  ['ss-pet','ss-adopter','ss-title','ss-story'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('ss-species').value='';
+  document.getElementById('ss-year').value = new Date().getFullYear();
+  document.getElementById('storyModal').classList.add('open');
+}
+
+async function submitStory() {
+  const petName = document.getElementById('ss-pet').value.trim();
+  const title   = document.getElementById('ss-title').value.trim();
+  const story   = document.getElementById('ss-story').value.trim();
+  if (!petName||!title||!story) { toast('Missing fields','Pet name, title and story required',true); return; }
+
+  const fd2 = new FormData();
+  fd2.append('pet_name',     petName);
+  fd2.append('pet_species',  document.getElementById('ss-species').value);
+  fd2.append('adopter_name', document.getElementById('ss-adopter').value.trim());
+  fd2.append('title',        title);
+  fd2.append('story',        story);
+  fd2.append('adopted_year', document.getElementById('ss-year').value||new Date().getFullYear());
+  const img = document.getElementById('ss-img').files?.[0];
+  if (img) fd2.append('image', img);
+
+  try {
+    const r = await fetch(`${API}/api/stories`, {method:'POST', headers:{'X-Auth-Token':token||''}, body:fd2});
+    const d = await r.json().catch(()=>({}));
+    if (!r.ok) throw new Error(d.error||'Failed');
+    document.getElementById('storyModal').classList.remove('open');
+    toast('Story submitted! ❤️','Your story is under review and will be published within 1-2 days.');
+  } catch(e) { toast('Error',e.message,true); }
+}
+
+// Admin: Stories
+async function loadAdminStories() {
+  try {
+    const items = await api('GET','/api/stories?all=1');
+    const tb = document.getElementById('admin-stories-tb');
+    if (!tb) return;
+    const EMSP = {Dog:'🐶',Cat:'🐱',Rabbit:'🐰',Bird:'🐦',Hamster:'🐹'};
+    tb.innerHTML = items.map(s => `<tr>
+      <td>${s.image_url?`<div class="td-img"><img src="${imgUrl(s.image_url)}" alt=""></div>`:`<div class="td-img">${EMSP[s.pet_species]||'❤️'}</div>`}</td>
+      <td><div class="td-name" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.title)}</div></td>
+      <td>${esc(s.pet_name)} ${s.pet_species?'('+esc(s.pet_species)+')':''}</td>
+      <td>${esc(s.adopter_name||s.submitter_name||'—')}</td>
+      <td>${s.adopted_year||'—'}</td>
+      <td><span class="chip chip-${s.status}">${s.status}</span></td>
+      <td><div class="td-acts">
+        ${s.status==='pending'?`<button class="btn btn-sage btn-sm" onclick="approveStory(${s.id})">✓ Approve</button>`:''}
+        ${s.status==='approved'&&!s.featured?`<button class="btn btn-sm" style="background:var(--amber-pale);color:var(--amber);border:1px solid #e8c8a0" onclick="featureStory(${s.id})">⭐ Feature</button>`:''}
+        <button class="btn btn-sm" style="background:#fce8ea;color:var(--blush);border:1px solid #f4c4ca" onclick="deleteStory(${s.id})">Delete</button>
+      </div></td>
+    </tr>`).join('');
+    const dot = document.getElementById('stories-dot');
+    const pend = items.filter(s=>s.status==='pending').length;
+    if (dot) { dot.style.display=pend>0?'inline':'none'; dot.textContent=pend; }
+  } catch(e) {
+    console.error('loadAdminStories error:', e);
+    const tb = document.getElementById('admin-stories-tb');
+    if (tb) tb.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--blush)">⚠️ Could not load stories: ${e.message}. <button class="btn btn-sm btn-ghost" onclick="loadAdminStories()">Retry</button></td></tr>`;
+  }
+}
+
+async function approveStory(id) {
+  try { await api('PUT','/api/stories/'+id,{status:'approved'}); toast('Approved','Story is now published'); loadAdminStories(); storiesCache=[]; } catch(e) { toast('Error',e.message,true); }
+}
+async function featureStory(id) {
+  try { await api('PUT','/api/stories/'+id,{featured:1}); toast('Featured','Story marked as featured'); loadAdminStories(); } catch(e) { console.error(e); }
+}
+async function deleteStory(id) {
+  if (!confirm('Delete this story?')) return;
+  try { await api('DELETE','/api/stories/'+id); toast('Deleted','Story removed'); loadAdminStories(); storiesCache=[]; } catch(e) { console.error(e); }
+}
+
+// ══════════════════════════════════════════════
+// FEATURE 4: AI PET RECOMMENDATION CHATBOT
+// ══════════════════════════════════════════════
+
+let aiHistory = [];
+
+function toggleAI() {
+  document.getElementById('aiWin').classList.toggle('open');
+}
+
+function sendAIQuick(msg) {
+  document.getElementById('aiInput').value = msg;
+  sendAI();
+}
+
+function addAIMsg(role, content, petMatches=[]) {
+  const msgs = document.getElementById('aiMsgs');
+  if (!msgs) return;
+
+  const div = document.createElement('div');
+  div.className = `ai-msg ${role}`;
+
+  // Convert markdown bold **text** to <strong>
+  const formatted = esc(content)
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br>');
+
+  div.innerHTML = `<div class="ai-bubble">${formatted}</div>`;
+
+  // Add pet chips if bot message has matches
+  if (role === 'bot' && petMatches.length > 0) {
+    const chips = document.createElement('div');
+    chips.className = 'ai-pet-chips';
+    petMatches.slice(0,4).forEach(p => {
+      const chip = document.createElement('button');
+      chip.className = 'ai-pet-chip';
+      chip.textContent = `${EM[p.species]||'🐾'} ${p.name}`;
+      chip.onclick = () => {
+        document.getElementById('aiWin').classList.remove('open');
+        openPetDetail(p.id);
+      };
+      chips.appendChild(chip);
+    });
+    div.appendChild(chips);
+  }
+
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+async function sendAI() {
+  const input = document.getElementById('aiInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+
+  // Hide quick buttons after first interaction
+  const quick = document.getElementById('aiQuick');
+  if (quick) quick.style.display = 'none';
+
+  addAIMsg('user', msg);
+  aiHistory.push({role:'user', content:msg});
+
+  // Typing indicator
+  const msgs = document.getElementById('aiMsgs');
+  const typing = document.createElement('div');
+  typing.className = 'ai-typing';
+  typing.id = 'ai-typing';
+  typing.innerHTML = '<span></span><span></span><span></span>';
+  msgs.appendChild(typing);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  try {
+    const res = await fetch(`${API}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'X-Auth-Token': token||'' },
+      body: JSON.stringify({ message: msg, history: aiHistory.slice(-8) })
+    });
+
+    const data = await res.json().catch(()=>({}));
+    document.getElementById('ai-typing')?.remove();
+
+    if (!res.ok) throw new Error(data.error || 'Failed to get response');
+
+    const reply = data.reply || 'I am here to help! Could you tell me more about your lifestyle?';
+    const pets  = data.pets || [];
+
+    addAIMsg('bot', reply, pets);
+    aiHistory.push({role:'assistant', content: reply});
+
+  } catch(e) {
+    document.getElementById('ai-typing')?.remove();
+    addAIMsg('bot', '🐾 I\'m having a brief moment! Please try again. In the meantime, you can browse our available pets using the Browse Pets page.');
+  }
+}
+
+// (adminTab is fully defined once, near loadDashboard — see updated version below)
+
+// ── INIT ──
+
+renderNav();
+loadHome();
+</script>
+</body>
+</html>

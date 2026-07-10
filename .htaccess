@@ -1,0 +1,76 @@
+Options -Indexes
+DirectoryIndex index.html
+
+# Pass custom auth header through to PHP (required for CGI/FPM deployments).
+# Without this, Apache strips X-Auth-Token before it reaches $_SERVER in PHP.
+CGIPassAuth On
+
+RewriteEngine On
+
+# ── IMPORTANT ─────────────────────────────────────────────────────────────────
+# RewriteBase must match the subfolder this app is served from.
+# If the app lives at http://localhost/pawshome/        → RewriteBase /pawshome/
+# If the app lives at http://localhost/pawshome_fixed/  → RewriteBase /pawshome_fixed/
+# If the app lives at http://localhost/                 → RewriteBase /
+# Change this one line whenever you rename or move the folder.
+RewriteBase /pawshome_fixed/
+
+# Expose X-Auth-Token to PHP via $_SERVER['HTTP_X_AUTH_TOKEN'] on all requests.
+# Needed for CGI/FPM deployments where Apache strips custom headers.
+RewriteCond %{HTTP:X-Auth-Token} .+
+RewriteRule .* - [E=HTTP_X_AUTH_TOKEN:%{HTTP:X-Auth-Token}]
+
+# Serve real files/dirs directly (don't rewrite static assets or uploads)
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# ── Auth ──────────────────────────────────────────────────────
+RewriteRule ^api/auth/(.+)$                  api/auth.php?action=$1 [L,QSA]
+
+# ── Pets ──────────────────────────────────────────────────────
+RewriteRule ^api/pets/([0-9]+)/favorite$     api/pets.php?id=$1&action=favorite [L,QSA]
+RewriteRule ^api/pets/([0-9]+)$              api/pets.php?id=$1 [L,QSA]
+RewriteRule ^api/pets$                       api/pets.php [L,QSA]
+
+# ── Applications ──────────────────────────────────────────────
+RewriteRule ^api/applications/mine$          api/applications.php?mine=1 [L,QSA]
+RewriteRule ^api/applications/([0-9]+)$      api/applications.php?id=$1 [L,QSA]
+RewriteRule ^api/applications$               api/applications.php [L,QSA]
+
+# ── Enquiries ─────────────────────────────────────────────────
+RewriteRule ^api/enquiries/mine$             api/enquiries.php?mine=1 [L,QSA]
+RewriteRule ^api/enquiries/([0-9]+)$         api/enquiries.php?id=$1 [L,QSA]
+RewriteRule ^api/enquiries$                  api/enquiries.php [L,QSA]
+
+# ── Appointments ──────────────────────────────────────────────
+RewriteRule ^api/appointments/mine$          api/appointments.php?mine=1 [L,QSA]
+RewriteRule ^api/appointments/([0-9]+)$      api/appointments.php?id=$1 [L,QSA]
+RewriteRule ^api/appointments$               api/appointments.php [L,QSA]
+
+# ── Lost & Found ──────────────────────────────────────────────
+RewriteRule ^api/lostfound/mine$             api/lostfound.php?mine=1 [L,QSA]
+RewriteRule ^api/lostfound/([0-9]+)$         api/lostfound.php?id=$1 [L,QSA]
+RewriteRule ^api/lostfound$                  api/lostfound.php [L,QSA]
+
+# ── Success Stories ───────────────────────────────────────────
+RewriteRule ^api/stories/([0-9]+)$           api/stories.php?id=$1 [L,QSA]
+RewriteRule ^api/stories$                    api/stories.php [L,QSA]
+
+# ── Surrender ─────────────────────────────────────────────────
+RewriteRule ^api/surrender/mine$             api/surrender.php?mine=1 [L,QSA]
+RewriteRule ^api/surrender/([0-9]+)$         api/surrender.php?id=$1 [L,QSA]
+RewriteRule ^api/surrender$                  api/surrender.php [L,QSA]
+
+# ── Blog ──────────────────────────────────────────────────────
+RewriteRule ^api/blog/([0-9]+)$              api/blog.php?id=$1 [L,QSA]
+RewriteRule ^api/blog$                       api/blog.php [L,QSA]
+
+# ── Stats ─────────────────────────────────────────────────────
+RewriteRule ^api/stats$                      api/stats.php [L,QSA]
+
+# ── Chat / AI ─────────────────────────────────────────────────
+RewriteRule ^api/chat$                       api/chat.php [L,QSA]
+
+# ── SPA fallback ──────────────────────────────────────────────
+RewriteRule ^(.*)$                           index.html [L]
